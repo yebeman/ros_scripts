@@ -1,6 +1,9 @@
+import rclpy
+from rclpy.node import Node
 import threading
 import time
 import random
+from std_msgs.msg import String
 
 class BNO055Data:
     """A shared data structure to hold IMU readings with timestamp."""
@@ -8,10 +11,10 @@ class BNO055Data:
         self.timestamp = time.time()
         self.acceleration = (0.0, 0.0, 0.0)
         self.gyro = (0.0, 0.0, 0.0)
-        self.lock = threading.Lock()  # Ensures thread safety
+        self.lock = threading.Lock()  # Thread safety
 
     def update(self, accel, gyro):
-        """Updates IMU readings with the current timestamp."""
+        """Updates IMU readings with timestamp."""
         with self.lock:
             self.timestamp = time.time()
             self.acceleration = accel
@@ -22,41 +25,48 @@ class BNO055Data:
         with self.lock:
             return self.timestamp, self.acceleration, self.gyro
 
-class IMUDataGenerator:
-    """Generates random IMU data at 100Hz."""
+class IMUDataGenerator(Node):
+    """ROS 2 Node that publishes IMU data at 100Hz to 'robot_imu' using a simple format."""
     def __init__(self, shared_data):
+        super().__init__('robot_imu_publisher')
         self.shared_data = shared_data
+        self.publisher_ = self.create_publisher(String, 'robot_imu', 10)
+        self.timer = self.create_timer(0.01, self.publish_imu_data)  # 100 Hz
 
-    def run(self):
-        """Simulates continuous IMU data generation."""
-        while True:
-            accel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(-2, 2))
-            gyro = (random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1))
-            self.shared_data.update(accel, gyro)
-            time.sleep(0.01)  # 100 Hz
+    def publish_imu_data(self):
+        """Publishes IMU data with timestamp in custom format."""
+        timestamp, accel, gyro = self.shared_data.read()
 
-class IMUDataReader:
-    """Reads IMU data continuously and prints it."""
-    def __init__(self, shared_data):
-        self.shared_data = shared_data
+        # Custom IMU message as a formatted string
+        msg = String()
+        msg.data = f"{timestamp},{accel[0]},{accel[1]},{accel[2]},{gyro[0]},{gyro[1]},{gyro[2]}"
+        self.publisher_.publish(msg)
 
-    def run(self):
-        """Continuously prints IMU data with timestamps."""
-        while True:
-            timestamp, accel, gyro = self.shared_data.read()
-            print(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))}] Acceleration: {accel}, Gyroscope: {gyro}")
-            time.sleep(0.01)  # Matches the update rate
+        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))}] Publishing IMU Data: {msg}")
 
-# Initialize shared data structure
-bno055_data = BNO055Data()
+def main(args=None):
+    rclpy.init(args=args)
+    shared_data = BNO055Data()
 
-# Start generator and reader threads
-generator = IMUDataGenerator(bno055_data)
-reader = IMUDataReader(bno055_data)
+    # Start generator in background thread
+    generator_thread = threading.Thread(target=lambda: generate_imu_data(shared_data), daemon=True)
+    generator_thread.start()
 
-threading.Thread(target=generator.run, daemon=True).start()
-threading.Thread(target=reader.run, daemon=True).start()
+    # Start ROS 2 publisher node
+    node = IMUDataGenerator(shared_data)
+    rclpy.spin(node)
 
-# Keep the main script running
-while True:
-    time.sleep(1)
+    # Clean up
+    node.destroy_node()
+    rclpy.shutdown()
+
+def generate_imu_data(shared_data):
+    """Simulates continuous IMU data generation."""
+    while True:
+        accel = (random.uniform(-2, 2), random.uniform(-2, 2), random.uniform(-2, 2))
+        gyro = (random.uniform(-1, 1), random.uniform(-1, 1), random.uniform(-1, 1))
+        shared_data.update(accel, gyro)
+        time.sleep(0.01)  # 100 Hz
+
+if __name__ == '__main__':
+    main()
