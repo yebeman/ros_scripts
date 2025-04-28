@@ -136,6 +136,7 @@ xilinx.com:ip:xlslice:1.0\
 xilinx.com:ip:proc_sys_reset:5.0\
 xilinx.com:ip:smartconnect:1.0\
 xilinx.com:ip:axi_iic:2.1\
+xilinx.com:ip:axi_intc:4.1\
 "
 
    set list_ips_missing ""
@@ -245,8 +246,6 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_19_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_19_POLARITY {Default} \
     CONFIG.PSU_MIO_19_SLEW {slow} \
-    CONFIG.PSU_MIO_1_DRIVE_STRENGTH {4} \
-    CONFIG.PSU_MIO_1_SLEW {slow} \
     CONFIG.PSU_MIO_20_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_20_POLARITY {Default} \
     CONFIG.PSU_MIO_20_SLEW {slow} \
@@ -268,8 +267,9 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_27_SLEW {slow} \
     CONFIG.PSU_MIO_29_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_29_SLEW {slow} \
-    CONFIG.PSU_MIO_2_DRIVE_STRENGTH {4} \
-    CONFIG.PSU_MIO_2_SLEW {slow} \
+    CONFIG.PSU_MIO_2_DRIVE_STRENGTH {12} \
+    CONFIG.PSU_MIO_2_POLARITY {Default} \
+    CONFIG.PSU_MIO_2_SLEW {fast} \
     CONFIG.PSU_MIO_32_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_32_POLARITY {Default} \
     CONFIG.PSU_MIO_32_SLEW {slow} \
@@ -288,6 +288,8 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_39_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_39_SLEW {slow} \
     CONFIG.PSU_MIO_3_DRIVE_STRENGTH {4} \
+    CONFIG.PSU_MIO_3_INPUT_TYPE {cmos} \
+    CONFIG.PSU_MIO_3_POLARITY {Default} \
     CONFIG.PSU_MIO_3_SLEW {slow} \
     CONFIG.PSU_MIO_40_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_40_SLEW {slow} \
@@ -358,14 +360,16 @@ proc create_root_design { parentCell } {
     CONFIG.PSU_MIO_8_SLEW {slow} \
     CONFIG.PSU_MIO_9_DRIVE_STRENGTH {4} \
     CONFIG.PSU_MIO_9_SLEW {slow} \
-    CONFIG.PSU_MIO_TREE_PERIPHERALS {Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#Quad SPI Flash#SPI 1#GPIO0 MIO#GPIO0 MIO#SPI 1#SPI 1#SPI 1#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0\
-MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#I2C 1#I2C 1#PMU GPI 0#DPAUX#DPAUX#DPAUX#DPAUX#PMU GPI 5#GPIO1 MIO#GPIO1 MIO#GPIO1 MIO#PMU GPO 3#UART 1#UART 1#Gem 1#Gem\
-1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#MDIO 1#MDIO 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB\
-1#USB 1#USB 1#USB0 Reset#USB1 Reset} \
-    CONFIG.PSU_MIO_TREE_SIGNALS {sclk_out#miso_mo1#mo2#mo3#mosi_mi0#n_ss_out#sclk_out#gpio0[7]#gpio0[8]#n_ss_out[0]#miso#mosi#gpio0[12]#gpio0[13]#gpio0[14]#gpio0[15]#gpio0[16]#gpio0[17]#gpio0[18]#gpio0[19]#gpio0[20]#gpio0[21]#gpio0[22]#gpio0[23]#scl_out#sda_out#gpi[0]#dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in#gpi[5]#gpio1[32]#gpio1[33]#gpio1[34]#gpo[3]#txd#rxd#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl#gem1_mdc#gem1_mdio_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#reset#reset}\
+    CONFIG.PSU_MIO_TREE_PERIPHERALS {Quad SPI Flash#Quad SPI Flash#GPIO0 MIO#GPIO0 MIO#Quad SPI Flash#Quad SPI Flash#SPI 1#GPIO0 MIO#GPIO0 MIO#SPI 1#SPI 1#SPI 1#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0\
+MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#I2C 1#I2C 1#PMU GPI 0#DPAUX#DPAUX#DPAUX#DPAUX#PMU GPI 5#GPIO1 MIO#GPIO1 MIO#GPIO1 MIO#PMU GPO 3#UART 1#UART 1#Gem 1#Gem 1#Gem 1#Gem\
+1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#Gem 1#MDIO 1#MDIO 1#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 0#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB 1#USB\
+1#USB0 Reset#USB1 Reset} \
+    CONFIG.PSU_MIO_TREE_SIGNALS {sclk_out#miso_mo1#gpio0[2]#gpio0[3]#mosi_mi0#n_ss_out#sclk_out#gpio0[7]#gpio0[8]#n_ss_out[0]#miso#mosi#gpio0[12]#gpio0[13]#gpio0[14]#gpio0[15]#gpio0[16]#gpio0[17]#gpio0[18]#gpio0[19]#gpio0[20]#gpio0[21]#gpio0[22]#gpio0[23]#scl_out#sda_out#gpi[0]#dp_aux_data_out#dp_hot_plug_detect#dp_aux_data_oe#dp_aux_data_in#gpi[5]#gpio1[32]#gpio1[33]#gpio1[34]#gpo[3]#txd#rxd#rgmii_tx_clk#rgmii_txd[0]#rgmii_txd[1]#rgmii_txd[2]#rgmii_txd[3]#rgmii_tx_ctl#rgmii_rx_clk#rgmii_rxd[0]#rgmii_rxd[1]#rgmii_rxd[2]#rgmii_rxd[3]#rgmii_rx_ctl#gem1_mdc#gem1_mdio_out#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#ulpi_clk_in#ulpi_dir#ulpi_tx_data[2]#ulpi_nxt#ulpi_tx_data[0]#ulpi_tx_data[1]#ulpi_stp#ulpi_tx_data[3]#ulpi_tx_data[4]#ulpi_tx_data[5]#ulpi_tx_data[6]#ulpi_tx_data[7]#reset#reset}\
 \
     CONFIG.PSU_USB3__DUAL_CLOCK_ENABLE {1} \
     CONFIG.PSU__ACT_DDR_FREQ_MHZ {1066.656006} \
+    CONFIG.PSU__CAN0__PERIPHERAL__ENABLE {0} \
+    CONFIG.PSU__CAN1__PERIPHERAL__ENABLE {0} \
     CONFIG.PSU__CRF_APB__ACPU_CTRL__ACT_FREQMHZ {1333.333008} \
     CONFIG.PSU__CRF_APB__ACPU_CTRL__FREQMHZ {1333.333} \
     CONFIG.PSU__CRF_APB__ACPU_CTRL__SRCSEL {APLL} \
@@ -416,6 +420,10 @@ MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 
     CONFIG.PSU__CRL_APB__ADMA_REF_CTRL__FREQMHZ {500} \
     CONFIG.PSU__CRL_APB__ADMA_REF_CTRL__SRCSEL {IOPLL} \
     CONFIG.PSU__CRL_APB__AMS_REF_CTRL__ACT_FREQMHZ {49.999500} \
+    CONFIG.PSU__CRL_APB__CAN0_REF_CTRL__ACT_FREQMHZ {99.999001} \
+    CONFIG.PSU__CRL_APB__CAN0_REF_CTRL__SRCSEL {IOPLL} \
+    CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__ACT_FREQMHZ {99.999001} \
+    CONFIG.PSU__CRL_APB__CAN1_REF_CTRL__SRCSEL {IOPLL} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__ACT_FREQMHZ {533.328003} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__FREQMHZ {533.333} \
     CONFIG.PSU__CRL_APB__CPU_R5_CTRL__SRCSEL {RPLL} \
@@ -566,6 +574,7 @@ MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 MIO#GPIO0 
     CONFIG.PSU__IOU_SLCR__TTC2__ACT_FREQMHZ {100.000000} \
     CONFIG.PSU__IOU_SLCR__TTC3__ACT_FREQMHZ {100.000000} \
     CONFIG.PSU__IOU_SLCR__WDT0__ACT_FREQMHZ {99.999001} \
+    CONFIG.PSU__IRQ_P2F_I2C1__INT {0} \
     CONFIG.PSU__LPD_SLCR__CSUPMU__ACT_FREQMHZ {100.000000} \
     CONFIG.PSU__MAXIGP0__DATA_WIDTH {128} \
     CONFIG.PSU__OVERRIDE__BASIC_CLOCK {0} \
@@ -603,7 +612,7 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
     CONFIG.PSU__QSPI_COHERENCY {0} \
     CONFIG.PSU__QSPI_ROUTE_THROUGH_FPD {0} \
     CONFIG.PSU__QSPI__GRP_FBCLK__ENABLE {0} \
-    CONFIG.PSU__QSPI__PERIPHERAL__DATA_MODE {x4} \
+    CONFIG.PSU__QSPI__PERIPHERAL__DATA_MODE {x1} \
     CONFIG.PSU__QSPI__PERIPHERAL__ENABLE {1} \
     CONFIG.PSU__QSPI__PERIPHERAL__IO {MIO 0 .. 5} \
     CONFIG.PSU__QSPI__PERIPHERAL__MODE {Single} \
@@ -682,7 +691,10 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
 
   # Create instance: smartconnect_0, and set properties
   set smartconnect_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:smartconnect:1.0 smartconnect_0 ]
-  set_property CONFIG.NUM_SI {1} $smartconnect_0
+  set_property -dict [list \
+    CONFIG.NUM_MI {2} \
+    CONFIG.NUM_SI {1} \
+  ] $smartconnect_0
 
 
   # Create instance: axi_iic_0, and set properties
@@ -693,17 +705,33 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   ] $axi_iic_0
 
 
+  # Create instance: axi_intc_0, and set properties
+  set axi_intc_0 [ create_bd_cell -type ip -vlnv xilinx.com:ip:axi_intc:4.1 axi_intc_0 ]
+  set_property -dict [list \
+    CONFIG.C_CASCADE_MASTER {0} \
+    CONFIG.C_EN_CASCADE_MODE {0} \
+    CONFIG.C_HAS_FAST {0} \
+    CONFIG.C_HAS_ILR {0} \
+    CONFIG.C_IRQ_CONNECTION {1} \
+    CONFIG.C_NUM_SW_INTR {0} \
+  ] $axi_intc_0
+
+
   # Create interface connections
   connect_bd_intf_net -intf_net axi_iic_0_IIC [get_bd_intf_ports som240_1_connector_pmod1_iic] [get_bd_intf_pins axi_iic_0/IIC]
   connect_bd_intf_net -intf_net smartconnect_0_M00_AXI [get_bd_intf_pins axi_iic_0/S_AXI] [get_bd_intf_pins smartconnect_0/M00_AXI]
+  connect_bd_intf_net -intf_net smartconnect_0_M01_AXI [get_bd_intf_pins axi_intc_0/s_axi] [get_bd_intf_pins smartconnect_0/M01_AXI]
   connect_bd_intf_net -intf_net zynq_ultra_ps_e_0_M_AXI_HPM0_FPD [get_bd_intf_pins zynq_ultra_ps_e_0/M_AXI_HPM0_FPD] [get_bd_intf_pins smartconnect_0/S00_AXI]
 
   # Create port connections
   connect_bd_net -net axi_iic_0_iic2intc_irpt  [get_bd_pins axi_iic_0/iic2intc_irpt] \
+  [get_bd_pins axi_intc_0/intr]
+  connect_bd_net -net axi_intc_0_irq  [get_bd_pins axi_intc_0/irq] \
   [get_bd_pins zynq_ultra_ps_e_0/pl_ps_irq0]
   connect_bd_net -net proc_sys_reset_0_interconnect_aresetn  [get_bd_pins proc_sys_reset_0/interconnect_aresetn] \
   [get_bd_pins smartconnect_0/aresetn] \
-  [get_bd_pins axi_iic_0/s_axi_aresetn]
+  [get_bd_pins axi_iic_0/s_axi_aresetn] \
+  [get_bd_pins axi_intc_0/s_axi_aresetn]
   connect_bd_net -net xlslice_0_Dout  [get_bd_pins xlslice_0/Dout] \
   [get_bd_ports fan_en_b]
   connect_bd_net -net zynq_ultra_ps_e_0_emio_ttc0_wave_o  [get_bd_pins zynq_ultra_ps_e_0/emio_ttc0_wave_o] \
@@ -712,12 +740,14 @@ Port;FD4A0000;FD4AFFFF;1|FPD;DPDMA;FD4C0000;FD4CFFFF;1|FPD;DDR_XMPU5_CFG;FD05000
   [get_bd_pins proc_sys_reset_0/slowest_sync_clk] \
   [get_bd_pins smartconnect_0/aclk] \
   [get_bd_pins axi_iic_0/s_axi_aclk] \
-  [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk]
+  [get_bd_pins zynq_ultra_ps_e_0/maxihpm0_fpd_aclk] \
+  [get_bd_pins axi_intc_0/s_axi_aclk]
   connect_bd_net -net zynq_ultra_ps_e_0_pl_resetn0  [get_bd_pins zynq_ultra_ps_e_0/pl_resetn0] \
   [get_bd_pins proc_sys_reset_0/ext_reset_in]
 
   # Create address segments
   assign_bd_address -offset 0xA0000000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_iic_0/S_AXI/Reg] -force
+  assign_bd_address -offset 0xA0010000 -range 0x00010000 -target_address_space [get_bd_addr_spaces zynq_ultra_ps_e_0/Data] [get_bd_addr_segs axi_intc_0/S_AXI/Reg] -force
 
 
   # Restore current instance
