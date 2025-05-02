@@ -28,14 +28,14 @@ ABAD_OFFSET = 0
 
 class MotorPublisher(Node):
     def __init__(self, data_queue):
-        super().__init__('motor_publisher')
+        super().__init__('motor_sate_publisher')
         self.pub_dict = {}  # Dictionary to store publishers dynamically
         self.parameters = ["error", "temperature", "torque", "position", "current", "batt_voltage"]
         self.data_queue = data_queue  # Queue for incoming motor data
 
     def get_publisher(self, motor_id, param):
         """Creates or retrieves an existing publisher for a motor's parameter."""
-        topic_name = f"/motor_{motor_id}/{param}"
+        topic_name = f"/motor_state_{motor_id}/{param}"
         if topic_name not in self.pub_dict:
             self.pub_dict[topic_name] = self.create_publisher(Float32, topic_name, 10)
         return self.pub_dict[topic_name]
