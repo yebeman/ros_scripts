@@ -7,6 +7,9 @@ import time
 from bno055 import *
 import cffi
 
+import rclpy
+from rclpy.node import Node
+
 from ctypes import c_ubyte, POINTER, cast
 from IPython.display import clear_output
 import sys
@@ -130,17 +133,22 @@ class multi_biped_i2c:
 # run
 i2c = multi_biped_i2c(overlay)
 imu = BNO055(i2c)
+
+# calibrate
 calibrated = False
+cal_sensor_offset= 0xd3ff2c00f0ffffffffffffffffffffffffffffffffff
+imu.set_offsets(buf)
+
 while True:
     if not calibrated:
         calibrated = imu.calibrated()
         sys.stdout.write('Calibration required: sys {} gyro {} accel {} mag {}'.format(*imu.cal_status()))
-    sys.stdout.write('Temperature {}°C'.format(imu.temperature()))
-    sys.stdout.write('Mag       x {:5.0f}    y {:5.0f}     z {:5.0f}'.format(*imu.mag()))
+
+    print(f'Gyro       x {imu.gyro()[0]:5.0f}    y {imu.gryo()[1]:5.0f}     z {imu.gyro()[2]:5.0f}')
     # sys.stdout.write('Gyro      x {:5.0f}    y {:5.0f}     z {:5.0f}'.format(*imu.gyro()))
     # sys.stdout.write('Accel     x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.accel()))
     # sys.stdout.write('Lin acc.  x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.lin_acc()))
     # sys.stdout.write('Gravity   x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.gravity()))
     # sys.stdout.write('Heading     {:4.0f} roll {:4.0f} pitch {:4.0f}'.format(*imu.euler()))
-    clear_output(wait=True)  # Clears the previous output
+    # clear_output(wait=True)  # Clears the previous output
     time.sleep(0.01)
