@@ -140,11 +140,12 @@ cal_sensor_offset = bytes.fromhex('d3ff2c00f0ffffffffffffffffffffffffffffffffff'
 imu.set_offsets(cal_sensor_offset)
 
 while True:
-    if not calibrated:
-        calibrated = imu.calibrated()
+    if imu.cal_status()[0] == 3 and imu.cal_status()[1] == 3 and imu.cal_status()[2] == 3 :
+        sys.stdout.write("calibrated")
         sys.stdout.write('Calibration required: sys {} gyro {} accel {} mag {}'.format(*imu.cal_status()))
 
-    print(f'Gyro       x {imu.gyro()[0]:5.0f}    y {imu.gyro()[1]:5.0f}     z {imu.gyro()[2]:5.0f}')
+    #print(f'Gyro       x {imu.gyro()[0]:5.0f}    y {imu.gyro()[1]:5.0f}     z {imu.gyro()[2]:5.0f}')
+    print('Heading     {:4.0f} roll {:4.0f} pitch {:4.0f}'.format(*imu.euler()))
     # sys.stdout.write('Gyro      x {:5.0f}    y {:5.0f}     z {:5.0f}'.format(*imu.gyro()))
     # sys.stdout.write('Accel     x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.accel()))
     # sys.stdout.write('Lin acc.  x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.lin_acc()))
