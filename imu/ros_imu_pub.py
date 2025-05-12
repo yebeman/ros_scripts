@@ -144,7 +144,7 @@ while True:
         calibrated = imu.calibrated()
         sys.stdout.write('Calibration required: sys {} gyro {} accel {} mag {}'.format(*imu.cal_status()))
 
-    print(f'Gyro       x {imu.gyro()[0]:5.0f}    y {imu.gryo()[1]:5.0f}     z {imu.gyro()[2]:5.0f}')
+    print(f'Gyro       x {imu.gyro()[0]:5.0f}    y {imu.gyro()[1]:5.0f}     z {imu.gyro()[2]:5.0f}')
     # sys.stdout.write('Gyro      x {:5.0f}    y {:5.0f}     z {:5.0f}'.format(*imu.gyro()))
     # sys.stdout.write('Accel     x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.accel()))
     # sys.stdout.write('Lin acc.  x {:5.1f}    y {:5.1f}     z {:5.1f}'.format(*imu.lin_acc()))
