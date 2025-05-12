@@ -137,7 +137,7 @@ imu = BNO055(i2c)
 # calibrate
 calibrated = False
 cal_sensor_offset= 0xd3ff2c00f0ffffffffffffffffffffffffffffffffff
-imu.set_offsets(buf)
+imu.set_offsets(cal_sensor_offset)
 
 while True:
     if not calibrated:
