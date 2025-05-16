@@ -1,5 +1,4 @@
 from pynq import Overlay
-from pynq.lib.iic import AxiIIC
 import threading
 
 import math

@@ -1,3 +1,5 @@
+from pynq.lib.iic import AxiIIC
+
 class multi_biped_i2c:
     def __init__(self, overlay, device_name="axi_iic_0"):
         """Initialize PYNQ I2C interface."""
