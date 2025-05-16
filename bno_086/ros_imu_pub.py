@@ -56,7 +56,7 @@ class IMUDataGenerator(Node):
 
         print(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))}] Publishing IMU Data")
 
-def retrieve_imu(shared_data):
+def retrieve_imu(shared_data, imu):
     """Continuously updates IMU data at 100Hz."""
     while True:
         lin_accel = imu.acc_linear
@@ -86,7 +86,7 @@ def main(args=None):
     shared_data = BNO086Data()
 
     # Start IMU retrieval in background thread
-    generator_thread = threading.Thread(target=retrieve_imu, args=(shared_data,), daemon=True)
+    generator_thread = threading.Thread(target=retrieve_imu, args=(shared_data,imu), daemon=True)
     generator_thread.start()
 
     # Start ROS 2 publisher node
