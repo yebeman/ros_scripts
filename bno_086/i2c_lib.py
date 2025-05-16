@@ -1,4 +1,6 @@
 from pynq.lib.iic import AxiIIC
+import threading
+import cffi
 
 class multi_biped_i2c:
     def __init__(self, overlay, device_name="axi_iic_0"):
