@@ -11,7 +11,7 @@ time.sleep(1)
 
 
 i2c = multi_biped_i2c(overlay)
-imu = BNO08X(i2c, debug=True, address=0x4B)
+imu = BNO08X(i2c, debug=False, address=0x4B)
 
 imu.enable_feature(BNO_REPORT_ACCELEROMETER, 20)
 imu.enable_feature(BNO_REPORT_LINEAR_ACCELERATION,20 )
