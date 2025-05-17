@@ -16,8 +16,7 @@ class IMUDataGenerator(Node):
     """ROS 2 Node that publishes IMU data at 100Hz to separate topics."""
     def __init__(self, data_queue):
         super().__init__('imu_publisher')
-        self.shared_data = shared_data
-
+        
         # Create publishers for each IMU topic
         self.gyro_pub = self.create_publisher(String, 'imu_gyro', 10)
         self.gravity_pub = self.create_publisher(String, 'imu_gravity', 10)
@@ -37,7 +36,7 @@ class IMUDataGenerator(Node):
                 self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
 
                 print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
-                
+
             except queue.Empty:
                 pass  # If queue is empty, continue waiting
 
