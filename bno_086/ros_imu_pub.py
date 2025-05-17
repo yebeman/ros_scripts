@@ -31,6 +31,8 @@ class IMUDataGenerator(Node):
             try:
                 lin_accel, gyro, gravity = self.data_queue.get(timeout=1)
 
+                print(lin_accel)
+
                 self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
                 self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
                 self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
@@ -66,7 +68,10 @@ def retrieve_imu(imu,data_queue):
         gravity = gravity/np.linalg.norm(gravity)
 
 
-        data_queue.put(lin_accel, gyro, gravity)
+        data_queue.put((np.array([lin_accel[0], lin_accel[1], lin_accel[2]]),
+                         np.array([gyro[0], gyro[1], gyro[2]]),
+                         np.array([gravity[0], gravity[1], gravity[2]])))
+
         time.sleep(0.01)  # 100 Hz 
 
 def main(args=None):
