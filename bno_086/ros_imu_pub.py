@@ -62,7 +62,7 @@ class IMUDataGenerator(Node):
             #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
 
 
-def retrieve_imu(shared_data, imu,data_queue):
+def retrieve_imu(imu,data_queue):
     """Continuously updates IMU data at 100Hz."""
     while True:
         lin_accel = imu.acc_linear
@@ -98,7 +98,7 @@ def main(args=None):
     shared_data = BNO086Data()
 
     # Start IMU retrieval in background thread
-    generator_thread = threading.Thread(target=retrieve_imu, args=(shared_data,imu), daemon=True)
+    generator_thread = threading.Thread(target=retrieve_imu, args=(imu,data_queue), daemon=True)
     generator_thread.start()
 
     # Start ROS 2 publisher node
