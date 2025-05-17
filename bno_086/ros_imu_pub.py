@@ -29,13 +29,15 @@ class IMUDataGenerator(Node):
 
         while rclpy.ok():
             try:
-                lin_accel, gyro, gravity = data_queue.get(timeout=1)
+                lin_accel, gyro, gravity = self.data_queue.get(timeout=1)
 
                 self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
                 self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
                 self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
 
                 print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
+
+                self.data_queue.task_done()  # Mark task as done
 
             except queue.Empty:
                 pass  # If queue is empty, continue waiting
