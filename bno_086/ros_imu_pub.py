@@ -5,6 +5,7 @@ import math
 from bno08x import *
 from i2c_lib import *
 import time
+import numpy as np
 
 import rclpy
 from rclpy.node import Node
@@ -54,14 +55,22 @@ class IMUDataGenerator(Node):
         self.gravity_pub.publish(String(data=f"{timestamp},{gravity[0]},{gravity[1]},{gravity[2]}"))
         self.lin_accel_pub.publish(String(data=f"{timestamp},{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
 
-        print(f"[{time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(timestamp))}] Publishing IMU Data")
+        print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
+        #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
+
 
 def retrieve_imu(shared_data, imu):
     """Continuously updates IMU data at 100Hz."""
     while True:
         lin_accel = imu.acc_linear
+
+
         gyro = imu.gyro
+
+
+        # normalize gravity
         gravity = imu.gravity
+        gravity = gravity/np.linalg.norm(gravity)
 
         shared_data.update(lin_accel, gyro, gravity)
         time.sleep(0.01)  # 100 Hz 
