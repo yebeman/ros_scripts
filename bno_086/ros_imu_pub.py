@@ -51,9 +51,9 @@ class IMUDataGenerator(Node):
         """Publishes IMU data to separate topics."""
         timestamp, lin_accel, gyro, gravity = self.shared_data.read()
 
-        self.gyro_pub.publish(String(data=f"{timestamp},{gyro[0]},{gyro[1]},{gyro[2]}"))
-        self.gravity_pub.publish(String(data=f"{timestamp},{gravity[0]},{gravity[1]},{gravity[2]}"))
-        self.lin_accel_pub.publish(String(data=f"{timestamp},{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
+        self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
+        self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
+        self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
 
         print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
         #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
@@ -66,7 +66,6 @@ def retrieve_imu(shared_data, imu):
 
 
         gyro = imu.gyro
-
 
         # normalize gravity
         gravity = imu.gravity
