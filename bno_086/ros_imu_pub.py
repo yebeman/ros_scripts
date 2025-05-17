@@ -52,7 +52,7 @@ class IMUDataGenerator(Node):
         """Publishes IMU data to separate topics."""
 
         while not data_queue.empty():
-            gyro, gravity, lin_accel = data_queue.get()
+            lin_accel, gyro, gravity = data_queue.get()
 
             self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
             self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
