@@ -6,6 +6,7 @@ from bno08x import *
 from i2c_lib import *
 import time
 import numpy as np
+import queue
 
 import rclpy
 from rclpy.node import Node
@@ -45,21 +46,23 @@ class IMUDataGenerator(Node):
         self.gravity_pub = self.create_publisher(String, 'imu_gravity', 10)
         self.lin_accel_pub = self.create_publisher(String, 'imu_lin_accel', 10)
 
-        self.timer = self.create_timer(0.01, self.publish_imu_data)  # 100 Hz
+        #self.timer = self.create_timer(0.01, self.publish_imu_data)  # 100 Hz
 
-    def publish_imu_data(self):
+    def publish_imu_data(self, data_queue):
         """Publishes IMU data to separate topics."""
-        timestamp, lin_accel, gyro, gravity = self.shared_data.read()
 
-        self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
-        self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
-        self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
+        while not data_queue.empty():
+            gyro, gravity, lin_accel = data_queue.get()
 
-        print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
-        #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
+            self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
+            self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
+            self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
+
+            print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
+            #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
 
 
-def retrieve_imu(shared_data, imu):
+def retrieve_imu(shared_data, imu,data_queue):
     """Continuously updates IMU data at 100Hz."""
     while True:
         lin_accel = imu.acc_linear
@@ -71,7 +74,8 @@ def retrieve_imu(shared_data, imu):
         gravity = imu.gravity
         gravity = gravity/np.linalg.norm(gravity)
 
-        shared_data.update(lin_accel, gyro, gravity)
+
+        data_queue.put(lin_accel, gyro, gravity)
         time.sleep(0.01)  # 100 Hz 
 
 def main(args=None):
@@ -80,9 +84,9 @@ def main(args=None):
     overlay = Overlay('/home/yebe/ros2_scripts/multi_ped.bit')
     time.sleep(1)
 
-
     i2c = multi_biped_i2c(overlay)
     imu = BNO08X(i2c, debug=False, address=0x4B)
+    data_queue = queue.Queue()
 
     imu.enable_feature(BNO_REPORT_ACCELEROMETER, 20)
     imu.enable_feature(BNO_REPORT_LINEAR_ACCELERATION,20 )
@@ -99,6 +103,7 @@ def main(args=None):
 
     # Start ROS 2 publisher node
     node = IMUDataGenerator(shared_data)
+    node.publish_imu_data(data_queue)
     rclpy.spin(node)
 
     # Clean up
