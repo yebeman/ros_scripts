@@ -37,6 +37,9 @@ class IMUDataGenerator(Node):
                 self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
 
                 print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
+                
+            except queue.Empty:
+                pass  # If queue is empty, continue waiting
 
         # while True
         #     ifdata_queue.empty():
