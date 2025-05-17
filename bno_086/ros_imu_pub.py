@@ -16,7 +16,7 @@ class IMUDataGenerator(Node):
     """ROS 2 Node that publishes IMU data at 100Hz to separate topics."""
     def __init__(self, data_queue):
         super().__init__('imu_publisher')
-        
+
         # Create publishers for each IMU topic
         self.gyro_pub = self.create_publisher(String, 'imu_gyro', 10)
         self.gravity_pub = self.create_publisher(String, 'imu_gravity', 10)
@@ -24,7 +24,7 @@ class IMUDataGenerator(Node):
 
         self.data_queue = data_queue  # Queue for incoming motor data
 
-    def publish_imu_data(self):
+    def publish_from_queue(self):
         """Publishes IMU data to separate topics."""
 
         while rclpy.ok():
@@ -91,6 +91,8 @@ def main(args=None):
 
     # Start ROS 2 publisher node
     node = IMUDataGenerator(data_queue)
+    publisher_thread = threading.Thread(target=node.publish_from_queue, daemon=True)
+    publisher_thread.start()
     rclpy.spin(node)
 
     # Clean up
