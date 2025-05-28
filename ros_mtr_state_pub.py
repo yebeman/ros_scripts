@@ -30,7 +30,7 @@ class MotorPublisher(Node):
     def __init__(self, data_queue):
         super().__init__('motor_sate_publisher')
         self.pub_dict = {}  # Dictionary to store publishers dynamically
-        self.parameters = ["error", "temperature", "torque", "position", "current", "batt_voltage"]
+        self.parameters = ["error", "temperature", "torque", "position", "current", "batt_voltage", "velocity"]
         self.data_queue = data_queue  # Queue for incoming motor data
 
     def get_publisher(self, motor_id, param):
@@ -67,11 +67,16 @@ class MotorCAN:
         }
         self.data_queue = data_queue  # Shared queue
         self.bus = bus
+        self.prev_positions = {}
+        self.prev_timestamps = {}
 
     def process_can_message(self, msg):
         """Extract and categorize messages by motor and parameter."""
         motor_id = msg.arbitration_id >> 5
         motor_param = self.params.get(msg.arbitration_id & 0b00011111)
+
+        if motor_param == None:
+            return
 
         # take only interested values
         if motor_param == "error":
@@ -91,9 +96,19 @@ class MotorCAN:
         elif motor_id == 3 or motor_id ==6 and motor_param == "position":
             value = value * ABAD_FACTOR - ABAD_OFFSET
 
+        # Calculate velocity
+        if motor_param == "position":
+            current_time = time.time()
+            if motor_id in self.prev_positions:
+                time_diff = current_time - self.prev_timestamps[motor_id]
+                if time_diff > 0:  # Prevent division by zero
+                    velocity = (value - self.prev_positions[motor_id]) / time_diff
+                    self.data_queue.put((motor_id, "velocity", velocity))
+            self.prev_positions[motor_id] = value
+            self.prev_timestamps[motor_id] = current_time
+
         # Add to queue
-        if motor_param:
-            self.data_queue.put((motor_id, motor_param, value)) 
+        self.data_queue.put((motor_id, motor_param, value)) 
 
     def listen(self):
         """Continuously listen for incoming CAN messages."""
