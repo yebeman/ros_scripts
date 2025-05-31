@@ -7,6 +7,7 @@ import queue
 from std_msgs.msg import String, Float32
 from enum import Enum
 import time
+from dataclasses import dataclass
 
 # plot
 import matplotlib.pyplot as plt
@@ -32,21 +33,70 @@ ABAD_OFFSET = 0
 ################################
 
 ################################
+# NN Constants 
+NN_ACTION_INTERVAL = 0.002
+
+# actuator constants
+STIFFNESS = 20
+DAMPING   = 0.167
+################################
+
+################################
 # Motor State
 class MOTOR_STATE (Enum):
     INITIALIZED = 0x01
     STOPPED     = 0x02
 
+class motor_queue:
+
+    def __init__(self, maxsize: int = 10):
+        self.motor_1  = queue.Queue(maxsize=maxsize)
+        self.motor_2  = queue.Queue(maxsize=maxsize)
+        self.motor_3  = queue.Queue(maxsize=maxsize)
+        self.motor_4  = queue.Queue(maxsize=maxsize)
+        self.motor_5  = queue.Queue(maxsize=maxsize)
+        self.motor_6  = queue.Queue(maxsize=maxsize)
+
+    def save_to_queue(self, motor_id: int, data):
+        try:
+            queue_attr = getattr(self, f"motor_{motor_id}")
+            
+            if queue_attr.full():
+                self.clear_queues()  # Clear all queue for sync data
+
+            queue_attr.put(data)  # Add the new item
+        except AttributeError:
+            raise ValueError("Invalid motor ID")
+
+   def wait_until_filled(self):
+        while self.motor_1.empty() or self.motor_2.empty() or
+              self.motor_3.empty() or self.motor_4.empty() or
+              self.motor_5.empty() or self.motor_6.empty() or :
+            pass  # Busy-waiting until both queues have data
+
+        return self.motor_1.get(), self.motor_2.get(),
+               self.motor_3.get(), self.motor_4.get(),
+               self.motor_5.get(), self.motor_6.get() , 
+
+    def clear_queues(self):
+        for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
+                            self.motor_4, self.motor_5, self.motor_6]:
+            while not motor_queue.empty():
+                motor_queue.get()
+
 ################################
 class MotorControl:
-    def __init__(self, position_queue, state_request_queue,current_pos_queue,current_vel_queue, bus):
+    def __init__(self, pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus):
         """Initialize motor controller."""
         self.bus = bus
-        self.position_queue      = position_queue
         self.state_request_queue = state_request_queue 
 
-        self.current_pos_queue = current_pos_queue
-        self.current_vel_queue = current_vel_queue
+        self.pos_nn_q = pos_nn_q
+        self.pos_rl_q = pos_rl_q
+        self.vel_rl_q = vel_rl_q
+
+        self.prv_target_pos = (0,0,0,0,0,0)
+        self.prv_torque     = 0
 
         self.running = True
         self.motor_state = MOTOR_STATE.STOPPED
@@ -79,11 +129,28 @@ class MotorControl:
 
         #print(f"Motor Active")
 
-    def send_position(self, id, position):
-        print(f"{id}:{position}")
+    # def send_position(self, id, position):
+    #     print(f"{id}:{position}")
+    #     self.bus.send(can.Message(
+    #         arbitration_id=(id << 5 | 0x0c),  # 0x0c: Set_Input_Pos
+    #         data=struct.pack('<f', position),
+    #         is_extended_id=False
+    #     ))
+
+    # def send_torque(self, motors_torque):
+
+    #     for index,torque in enumerate(motors_torque) :  
+    #         print(f" sent torque = {index}:{torque}")      
+    #         bus.send(can.Message(
+    #             arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
+    #             data=struct.pack('<f', torque),
+    #             is_extended_id=False
+    #         ))
+
+    def send_position(self, id, position, velocity_feedforward=0, torque_feedforward=0):
         self.bus.send(can.Message(
-            arbitration_id=(id << 5 | 0x0c),  # 0x0c: Set_Input_Pos
-            data=struct.pack('<f', position),
+            arbitration_id=(id << 5 | 0x0C),
+            data=struct.pack('<fhh', float(position), velocity_feedforward, torque_feedforward),
             is_extended_id=False
         ))
 
@@ -122,12 +189,74 @@ class MotorControl:
 
     def process_positions(self):
         while self.running:
-            
-            motor_id, position = self.position_queue.get()  # Blocks until an item is available
 
+            # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
                 print(f"Motors havn't been initialied yet")
                 continue
+
+            # note = 
+            # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
+
+            # are all motor queue filled?
+            # then extract all of them and save in to a variable            
+            target_pos = self.pos_nn_q.wait_until_filled() # only has 1 queue size
+
+            # get current position and vel          
+            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size
+            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size
+
+            # calculate pos error
+            pos_error = target_pos - cur_pos
+
+            # calculate vel error
+            # calculate nn velocity 
+            target_vel = ( target_pos - self.prv_target_pos ) / NN_ACTION_INTERVAL
+            vel_error  = target_vel - cur_vel
+
+            # then calculate torque            
+            # from isaaclab -- 
+            # error_pos = control_action.joint_positions  - joint_pos
+            # error_vel = control_action.joint_velocities - joint_vel
+            # # calculate the desired joint torques
+            # self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
+            torque = STIFFNESS*pos_error + DAMPING*vel_error + self.prv_torque
+
+            # translate torque to real
+            # torque_nn = (Mass * gravity) * radius - from motor torque
+            # force = 7468.5*Torque_real - 71.897 => from torque_motor graph
+            # torque_at_1m = 0.24 * force
+            # torque_nn = torque_at_1m / link_radius
+
+            # apply cliping to get max torque
+            # max(-1.5, min(torque_rl, 1.5))
+
+            # calculate pos_rl 
+            # if ( motor_id   == 1 or motor_id == 4 ) :       # knee
+            #     position = max(-2.67, min(position, 2.67))  # Clamp within [-2.7, 2.7] # 99%
+            #     position = ( position + KNEE_OFFSET ) * KNEE_FACTOR 
+            # elif ( motor_id == 2 or motor_id == 5 ):      # hip
+            #     position = max(-2.27, min(position, 2.27))  # Clamp within [-2.3, 2.3]
+            #     position = ( position - HIP_OFFSET ) * HIP_FACTOR
+            # elif ( motor_id == 3 or motor_id == 6 ):        #abad
+            #     position = max(-0.43, min(position, 0.43))  # Clamp within [-0.44, 0.44]
+            #     position = ( position + ABAD_OFFSET ) * ABAD_FACTOR
+            # else :
+            #     print(f"Motor_{motor_id} position {position} too large")
+            #     continue;  
+                
+            # translate to the odrive torque and send
+            #self.send_position(pos_rl,vel_rl,torque_rl)
+
+
+            self.prv_target_pos = target_pos
+            self.prv_torque     = torque
+
+            # then subtract 
+
+     
+
+
 
             # apply factor 
             
@@ -135,34 +264,19 @@ class MotorControl:
             # Update stored data
             #mtr ~40ms
 
-            if motor_id == 1 :
-                current_time = time.time() * 1000  # Get current time in milliseconds
-                if self.start_time is None:  
-                    self.start_time = current_time  # Initialize start_time only on first data point
-                elapsed_time = current_time - self.start_time  # Compute time since first position
-                self.position_data.append((elapsed_time, position))
-                print(f"Received command after: {motor_id}:{position}:{elapsed_time}")
-                self.update_plot()
+            # if motor_id == 1 :
+            #     current_time = time.time() * 1000  # Get current time in milliseconds
+            #     if self.start_time is None:  
+            #         self.start_time = current_time  # Initialize start_time only on first data point
+            #     elapsed_time = current_time - self.start_time  # Compute time since first position
+            #     self.position_data.append((elapsed_time, position))
+            #     print(f"Received command after: {motor_id}:{position}:{elapsed_time}")
+            #     self.update_plot()
 
 
 
-            if ( motor_id   == 1 or motor_id == 4 ) :       # knee
-                position = max(-2.67, min(position, 2.67))  # Clamp within [-2.7, 2.7] # 99%
-                position = ( position + KNEE_OFFSET ) * KNEE_FACTOR 
-            elif ( motor_id == 2 or motor_id == 5 ):      # hip
-                position = max(-2.27, min(position, 2.27))  # Clamp within [-2.3, 2.3]
-                position = ( position - HIP_OFFSET ) * HIP_FACTOR
-            elif ( motor_id == 3 or motor_id == 6 ):        #abad
-                position = max(-0.43, min(position, 0.43))  # Clamp within [-0.44, 0.44]
-                position = ( position + ABAD_OFFSET ) * ABAD_FACTOR
-            else :
-                print(f"Motor_{motor_id} position {position} too large")
-                continue;  
 
-            # error_pos = control_action.joint_positions - joint_pos
-            # error_vel = control_action.joint_velocities - joint_vel
-            # # calculate the desired joint torques
-            # self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
+
 
             #print(f"Received command after: {motor_id}:{position}")
 
@@ -215,14 +329,14 @@ class MotorControl:
 class MotorListener(Node):
     """ROS 2 Node that subscribes to six motor topics and saves data in a queue."""
     
-    def __init__(self, position_queue,state_request_queue,current_pos_queue,current_vel_queue):
+    def __init__(self, pos_nn_q,state_request_queue,pos_rl_q,vel_rl_q):
         super().__init__('motor_cmd_listener')
 
-        self.position_queue      = position_queue
-        self.state_request_queue = state_request_queue
+        self.pos_nn_q = pos_nn_q
+        self.pos_rl_q = pos_rl_q
+        self.vel_rl_q = vel_rl_q
 
-        self.current_pos_queue = current_pos_queue
-        self.current_vel_queue = current_vel_queue
+        self.state_request_queue = state_request_queue
 
         self.topic_names = [
             '/motor_cmd_1/position', '/motor_cmd_2/position', '/motor_cmd_3/position',
@@ -242,26 +356,26 @@ class MotorListener(Node):
 
         # Initialize subscriptions for motor positions (Float32 type)
         for idx, topic in enumerate(self.topic_names, start=1):
-            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.listener_callback(msg, m_id), 3)
+            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.listener_callback(msg, m_id), 10)
 
         for idx, topic in enumerate(self.motor_current_position, start=1):
-            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.current_pos_callback(msg, m_id), 3)
+            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.current_pos_callback(msg, m_id), 10)
 
         for idx, topic in enumerate(self.motor_current_velocity, start=1):
-            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.current_vel_callback(msg, m_id), 3)
+            self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.current_vel_callback(msg, m_id), 10)
 
         # Subscription for /all_motor/cmd with String commands
         self.create_subscription(String, self.all_motor_cmd_topic, self.all_motor_callback, 3)
 
     def listener_callback(self, msg, motor_id):
         """Stores received motor position data in the queue."""
-        self.position_queue.put((motor_id, msg.data))
+        self.pos_nn_q.save_in_q((motor_id, msg.data))
 
     def current_pos_callback(self, msg, motor_id):
-        self.current_pos_queue.put((motor_id, msg.data))
+        self.pos_rl_q.save_in_q((motor_id, msg.data))
 
     def current_vel_callback(self, msg, motor_id):
-        self.current_vel_queue.put((motor_id, msg.data))
+        self.vel_rl_q.save_in_q((motor_id, msg.data))
 
     def all_motor_callback(self, msg):
         """Handles start/stop commands for all motors."""
@@ -280,19 +394,21 @@ def main(args=None):
     bus = None#can.interface.Bus(interface='socketcan', channel='can0', bitrate=1000000)
     
     rclpy.init(args=args)
-    position_queue      = queue.Queue()
-    state_request_queue = queue.Queue()
-    current_pos_queue   = queue.Queue()
-    current_vel_queue   = queue.Queue()
 
-    listener_node = MotorListener(position_queue,state_request_queue,current_pos_queue,current_vel_queue)
+    pos_nn_q = motor_queue(max_size=1)
+    pos_rl_q = motor_queue(ax_size=1)
+    vel_rl_q = motor_queue()
+
+    state_request_queue = queue.Queue()
+
+    listener_node = MotorListener(pos_nn_q,state_request_queue,pos_rl_q,vel_rl_q)
     listener_thread = threading.Thread(target=rclpy.spin, args=(listener_node,), daemon=True)
     listener_thread.start()
 
     # motor_control = MotorControl(position_queue, bus)
     # motor_thread = threading.Thread(target=motor_control.run, daemon=True)
     # motor_thread.start()
-    motor_control = MotorControl(position_queue, state_request_queue,current_pos_queue,current_vel_queue, bus)
+    motor_control = MotorControl(pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus)
 
     try:
         listener_thread.join()  # Keep ROS 2 listener running
