@@ -30,6 +30,13 @@ HIP_OFFSET  = 2.2
 # -0.68  <--> 0.68 = 1.36
 ABAD_FACTOR = 1.36/0.88
 ABAD_OFFSET = 0
+
+# position conversion 
+URDF_TO_REAL_POS_FACTOR = (ABAD_FACTOR,ABAD_FACTOR,HIP_FACTOR,HIP_FACTOR,KNEE_FACTOR,KNEE_FACTOR)
+URDF_TO_REAL_POS_OFFSET = (ABAD_OFFSET,ABAD_OFFSET,-1*HIP_OFFSET,-1*HIP_OFFSET,KNEE_OFFSET,KNEE_OFFSET)
+
+# number of motots
+NO_OF_MOTORS = 6
 ################################
 
 ################################
@@ -39,6 +46,14 @@ NN_ACTION_INTERVAL = 0.002
 # actuator constants
 STIFFNESS = 20
 DAMPING   = 0.167
+
+# motor link length
+# TO-DO - measure actual radius 
+FIXED_LINKS_LENGTH = (0.2, 0.2, 0.32, 0.32, 0.24, 0.24)
+
+# max od torque
+ODRIVE_SET_MIN_TORQUE = -1.2 
+ODRIVE_SET_MAX_TORQUE = 1.2 
 ################################
 
 ################################
@@ -147,12 +162,21 @@ class MotorControl:
     #             is_extended_id=False
     #         ))
 
-    def send_position(self, id, position, velocity_feedforward=0, torque_feedforward=0):
-        self.bus.send(can.Message(
-            arbitration_id=(id << 5 | 0x0C),
-            data=struct.pack('<fhh', float(position), velocity_feedforward, torque_feedforward),
-            is_extended_id=False
-        ))
+    def send_position(
+        self,
+        position: tuple = (0, 0, 0, 0, 0, 0),
+        velocity_feedforward: tuple = (0, 0, 0, 0, 0, 0),
+        torque_feedforward: tuple = (0, 0, 0, 0, 0, 0)
+    ):
+        for index in range(NO_OF_MOTORS):            
+            try:
+                self.bus.send(can.Message(
+                    arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
+                    data=struct.pack('<fff', position[index], velocity_feedforward[index], torque_feedforward[index]),
+                    is_extended_id=False
+                ))
+            except can.CanError as e:
+                print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
         print("am here")
@@ -223,13 +247,16 @@ class MotorControl:
             torque = STIFFNESS*pos_error + DAMPING*vel_error + self.prv_torque
 
             # translate torque to real
-            # torque_nn = (Mass * gravity) * radius - from motor torque
-            # force = 7468.5*Torque_real - 71.897 => from torque_motor graph
-            # torque_at_1m = 0.24 * force
-            # torque_nn = torque_at_1m / link_radius
-
+            # torque_nn = Force * radius - from motor torque
+            # rlp of motor and torque at 0.24m 
+            # F1 = 7468.5*Torque_real - 71.897
+            # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
+            force_at_24 = torque / FIXED_LINKS_LENGTH
+            force_at_link = (FIXED_LINKS_LENGTH/0.24) * force_at_24
+            odrive_torque = ( force_at_link + 71.897 ) / 7468.5
+        
             # apply cliping to get max torque
-            # max(-1.5, min(torque_rl, 1.5))
+            odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
 
             # calculate pos_rl 
             # if ( motor_id   == 1 or motor_id == 4 ) :       # knee
@@ -244,46 +271,17 @@ class MotorControl:
             # else :
             #     print(f"Motor_{motor_id} position {position} too large")
             #     continue;  
-                
+            target_pos = ( target_pos + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
+
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
+            self.send_position(target_pos,target_vel,odrive_torque)
 
 
             self.prv_target_pos = target_pos
             self.prv_torque     = torque
 
-            # then subtract 
-
-     
-
-
-
-            # apply factor 
-            
-
-            # Update stored data
-            #mtr ~40ms
-
-            # if motor_id == 1 :
-            #     current_time = time.time() * 1000  # Get current time in milliseconds
-            #     if self.start_time is None:  
-            #         self.start_time = current_time  # Initialize start_time only on first data point
-            #     elapsed_time = current_time - self.start_time  # Compute time since first position
-            #     self.position_data.append((elapsed_time, position))
-            #     print(f"Received command after: {motor_id}:{position}:{elapsed_time}")
-            #     self.update_plot()
-
-
-
-
-
-
-            #print(f"Received command after: {motor_id}:{position}")
-
-
-            # Update plot
-            #self.send_position(motor_id, position)
-    
+              
     def process_commands(self):
         while self.running:
             command = self.state_request_queue.get()
