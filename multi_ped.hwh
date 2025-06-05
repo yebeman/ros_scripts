@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="UTF-8" standalone="no" ?>
-<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Fri May 23 22:17:35 2025" VIVADOVERSION="2024.2">
+<EDKSYSTEM EDWVERSION="1.2" TIMESTAMP="Wed Jun  4 23:51:38 2025" VIVADOVERSION="2024.2">
 
   <SYSTEMINFO ARCH="zynquplus" BOARD="xilinx.com:kr260_som_som240_1_connector_kr260_carrier_som240_1_connector_som240_2_connector_kr260_carrier_som240_2_connector:part0:1.1" DEVICE="xck26" NAME="kria_starter_kit" PACKAGE="sfvc784" SPEEDGRADE="-2LV"/>
 
@@ -800,7 +800,7 @@
         <PARAMETER NAME="C_DISABLE_SETUP_VIOLATION_CHECK" VALUE="0"/>
         <PARAMETER NAME="C_FAMILY" VALUE="zynquplus"/>
         <PARAMETER NAME="C_GPO_WIDTH" VALUE="1"/>
-        <PARAMETER NAME="C_IIC_FREQ" VALUE="400000"/>
+        <PARAMETER NAME="C_IIC_FREQ" VALUE="350000"/>
         <PARAMETER NAME="C_SCL_INERTIAL_DELAY" VALUE="0"/>
         <PARAMETER NAME="C_SDA_INERTIAL_DELAY" VALUE="0"/>
         <PARAMETER NAME="C_SDA_LEVEL" VALUE="1"/>
@@ -814,7 +814,7 @@
         <PARAMETER NAME="AXI_ACLK_FREQ_MHZ" VALUE="99.999001"/>
         <PARAMETER NAME="Component_Name" VALUE="kria_starter_kit_axi_iic_0_0"/>
         <PARAMETER NAME="IIC_BOARD_INTERFACE" VALUE="som240_1_connector_pmod1_iic"/>
-        <PARAMETER NAME="IIC_FREQ_KHZ" VALUE="400"/>
+        <PARAMETER NAME="IIC_FREQ_KHZ" VALUE="350"/>
         <PARAMETER NAME="TEN_BIT_ADR" VALUE="7_bit"/>
         <PARAMETER NAME="USE_BOARD_FLOW" VALUE="true"/>
         <PARAMETER NAME="EDK_IPTYPE" VALUE="PERIPHERAL"/>
