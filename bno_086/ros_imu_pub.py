@@ -6,6 +6,7 @@ from bno08x import *
 from i2c_lib import *
 import time
 import numpy as np
+import queue
 
 import rclpy
 from rclpy.node import Node
@@ -47,23 +48,23 @@ class IMUDataGenerator(Node):
         self.shared_data = shared_data
 
         # Create publishers for each IMU topic
-        self.gyro_pub = self.create_publisher(String, 'imu_gyro', 10)
+        self.gyro_pub    = self.create_publisher(String, 'imu_gyro', 10)
         self.gravity_pub = self.create_publisher(String, 'imu_gravity', 10)
-        self.lin_accel_pub = self.create_publisher(String, 'imu_lin_accel', 10)
+        self.lin_acc     = self.create_publisher(String, 'imu_lin_acc', 10)
 
         self.timer = self.create_timer(0.01, self.publish_imu_data)  # 100 Hz
 
     def publish_imu_data(self):
         """Publishes IMU data to separate topics."""
-        timestamp, lin_accel, gyro, gravity = self.shared_data.read()
+        lin_acc, gyro, gravity = self.shared_data.get()
 
         self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
         self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
-        self.lin_accel_pub.publish(String(data=f"{lin_accel[0]},{lin_accel[1]},{lin_accel[2]}"))
+        self.lin_acc.publish(String(data=f"{lin_acc[0]},{lin_acc[1]},{lin_acc[2]}"))
 
         #print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
         #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
-        print("lin_accel\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(lin_accel[0], lin_accel[1], lin_accel[2]))
+        print("lin_acc\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(lin_acc[0], lin_acc[1], lin_acc[2]))
 
 
 def retrieve_imu(shared_data, imu):
@@ -79,7 +80,7 @@ def retrieve_imu(shared_data, imu):
         gravity = gravity
         gravity = gravity/np.linalg.norm(gravity)
 
-        shared_data.update(lin_acc, gyro, gravity)
+        shared_data.put(lin_acc, gyro, gravity)
 
         print(f"every {time.monotonic() - origin_time:.6f}")
         origin_time = time.monotonic() #ticks_ms()
@@ -103,7 +104,7 @@ def main(args=None):
     print("BNO08x sensors enabling : Done\n")
 
     rclpy.init(args=args)
-    shared_data = BNO086Data()
+    shared_data = queue.Queue() #BNO086Data()
 
     # Start IMU retrieval in background thread
     generator_thread = threading.Thread(target=retrieve_imu, args=(shared_data,imu), daemon=True)
