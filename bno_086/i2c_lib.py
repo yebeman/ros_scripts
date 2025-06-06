@@ -31,20 +31,19 @@ class multi_biped_i2c:
         #print(f"writeto after", {bytes(data)})
 
 
-    def readfrom_into(self, address, buffer, in_start=0, in_end=None):
-        
+    def readfrom_into(self, address, buffer, *, start=0, end=None, stop=True):
+        if end is None:
+            end = len(buffer)
+
         _ffi = cffi.FFI()
-        rx_buf = _ffi.new("unsigned char [512]")
+        rx_buf = _ffi.new(f"unsigned char [{end}]")  # Correct string formatting for allocation
 
-        #print(f"readfrom_into before ")
-
-        
-        self.i2c.receive(address, rx_buf, len(buffer),0)
+        self.i2c.receive(address, rx_buf, end - start)  # Correct the variable name
         
         #print(f"readfrom_into after", {bytes(rx_buf)})
         
-        for i in range(len(buffer)):
-            buffer[i] = rx_buf[i]
+        for i in range(end - start):
+            buffer[i + start] = rx_buf[i]  
             
     def read(self, address, length):
         print(f"hi2")
