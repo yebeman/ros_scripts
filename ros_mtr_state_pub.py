@@ -68,8 +68,8 @@ class MotorCAN:
         }
         self.data_queue = data_queue  # Shared queue
         self.bus = bus
-        self.prev_positions = {}
-        self.prev_timestamps = {}
+        self.prev_positions  = {0,0,0,0,0,0}
+        self.prev_timestamps = {0,0,0,0,0,0}
         self.origin_time = time.monotonic() #ticks_ms()  
 
     def process_can_message(self, msg):
@@ -90,24 +90,33 @@ class MotorCAN:
             _first, _second = struct.unpack('<ff', bytes(msg.data))
             value = _second if motor_param in ["current", "torque"] else _first
 
-        # apply factor 
-        if (motor_id == 1 or motor_id == 4) and motor_param == "position":
-            value = value * KNEE_FACTOR - KNEE_OFFSET
-        elif (motor_id == 2 or motor_id == 5) and motor_param == "position":
-            value = value * HIP_FACTOR + HIP_OFFSET
-        elif (motor_id == 3 or motor_id == 6) and motor_param == "position":
-            value = value * ABAD_FACTOR - ABAD_OFFSET
 
-        # Calculate velocity
+
         if motor_param == "position":
-            current_time = time.time()
-            if motor_id in self.prev_positions:
-                time_diff = current_time - self.prev_timestamps[motor_id]
-                if time_diff > 0:  # Prevent division by zero
-                    velocity = (value - self.prev_positions[motor_id]) / time_diff
-                    self.data_queue.put((motor_id, "velocity", velocity))
-            self.prev_positions[motor_id] = value
-            self.prev_timestamps[motor_id] = current_time
+
+            # apply factor 
+            if (motor_id == 1 or motor_id == 4):
+                value = value * KNEE_FACTOR - KNEE_OFFSET
+            elif (motor_id == 2 or motor_id == 5):
+                value = value * HIP_FACTOR + HIP_OFFSET
+            elif (motor_id == 3 or motor_id == 6):
+                value = value * ABAD_FACTOR - ABAD_OFFSET
+
+            # calculate velocity 
+            # first one should be ignored
+            current_time = time.monotonic() 
+
+            time_diff = current_time - self.prev_timestamps[motor_id]
+            if time_diff > 0:  # Prevent division by zero
+                velocity = (value - self.prev_positions[motor_id]) / time_diff
+            else:
+                velocity = 0
+
+            self.prev_positions[motor_id]  = value
+            self.prev_timestamps[motor_id] = current_time 
+            self.data_queue.put((motor_id, "velocity", velocity))
+            print(f"{motor_id} = {velocity} every {time.monotonic() - origin_time:.6f}")
+            origin_time = time.monotonic() #ticks_ms()
 
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
