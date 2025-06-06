@@ -59,7 +59,9 @@ class IMUDataGenerator(Node):
         gravity, lin_acc, gyro = self.shared_data.get()
 
         # normalize gravity
-        gravity = gravity/np.linalg.norm(gravity)
+        norm = np.linalg.norm(gravity)
+        if norm > 0:
+            gravity = gravity/np.linalg.norm(gravity)
 
         lin_acc_x, lin_acc_y, lin_acc_z = lin_acc
         gravity_x, gravity_y, gravity_z = gravity
