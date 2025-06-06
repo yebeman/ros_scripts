@@ -58,7 +58,7 @@ class MotorPublisher(Node):
 class MotorCAN:
     def __init__(self, data_queue,bus):
         """Initialize CAN bus and define motor IDs and parameters."""
-        self.params = {
+        self.params = { 
             0x09: "position",
             0x14: "current",
             0x1C: "torque",
@@ -70,6 +70,7 @@ class MotorCAN:
         self.bus = bus
         self.prev_positions = {}
         self.prev_timestamps = {}
+        self.origin_time = time.monotonic() #ticks_ms()  
 
     def process_can_message(self, msg):
         """Extract and categorize messages by motor and parameter."""
@@ -90,11 +91,13 @@ class MotorCAN:
             value = _second if motor_param in ["current", "torque"] else _first
 
         # apply factor 
-        if motor_id == 1 or motor_id == 4 and motor_param == "position":
+        if (motor_id == 1 or motor_id == 4) and motor_param == "position":
+            print(f"every {time.monotonic() - self.origin_time:.6f}")
+            self.origin_time = time.monotonic() #ticks_ms()
             value = value * KNEE_FACTOR - KNEE_OFFSET
-        elif motor_id == 2 or motor_id ==5 and motor_param == "position":
+        elif (motor_id == 2 or motor_id == 5) and motor_param == "position":
             value = value * HIP_FACTOR + HIP_OFFSET
-        elif motor_id == 3 or motor_id ==6 and motor_param == "position":
+        elif (motor_id == 3 or motor_id == 6) and motor_param == "position":
             value = value * ABAD_FACTOR - ABAD_OFFSET
 
         # Calculate velocity
