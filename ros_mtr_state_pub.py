@@ -68,8 +68,8 @@ class MotorCAN:
         }
         self.data_queue = data_queue  # Shared queue
         self.bus = bus
-        self.prev_positions  = {0,0,0,0,0,0}
-        self.prev_timestamps = {0,0,0,0,0,0}
+        self.prev_positions  = [0,0,0,0,0,0]
+        self.prev_timestamps = [0,0,0,0,0,0]
         self.origin_time = time.monotonic() #ticks_ms()  
 
     def process_can_message(self, msg):
