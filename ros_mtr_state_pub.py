@@ -115,8 +115,8 @@ class MotorCAN:
             self.prev_positions[motor_id]  = value
             self.prev_timestamps[motor_id] = current_time 
             self.data_queue.put((motor_id, "velocity", velocity))
-            print(f"{motor_id} = {velocity} every {time.monotonic() - origin_time:.6f}")
-            origin_time = time.monotonic() #ticks_ms()
+            print(f"{motor_id} = {velocity} every {time.monotonic() - self.origin_time:.6f}")
+            self.origin_time = time.monotonic() #ticks_ms()
 
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
