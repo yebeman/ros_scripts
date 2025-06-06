@@ -367,13 +367,13 @@ class MotorListener(Node):
 
     def listener_callback(self, msg, motor_id):
         """Stores received motor position data in the queue."""
-        self.pos_nn_q.save_to_queue((motor_id, msg.data))
+        self.pos_nn_q.save_to_queue(motor_id, msg.data)
 
     def current_pos_callback(self, msg, motor_id):
-        self.pos_rl_q.save_to_queue((motor_id, msg.data))
+        self.pos_rl_q.save_to_queue(motor_id, msg.data)
 
     def current_vel_callback(self, msg, motor_id):
-        self.vel_rl_q.save_to_queue((motor_id, msg.data))
+        self.vel_rl_q.save_to_queue(motor_id, msg.data)
 
     def all_motor_callback(self, msg):
         """Handles start/stop commands for all motors."""
