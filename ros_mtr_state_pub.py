@@ -107,16 +107,16 @@ class MotorCAN:
             current_time = time.monotonic() 
 
             time_diff = current_time - self.prev_timestamps[motor_id]
-            if time_diff > 0:  # Prevent division by zero
+            if time_diff > 0:  # Prevent division by zero and negative 
                 velocity = (value - self.prev_positions[motor_id]) / time_diff
             else:
-                velocity = 0
+                velocity = 0.0
 
             self.prev_positions[motor_id]  = value
             self.prev_timestamps[motor_id] = current_time 
             self.data_queue.put((motor_id, "velocity", velocity))
-            print(f"{motor_id} = {velocity} every {time.monotonic() - self.origin_time:.6f}")
-            self.origin_time = time.monotonic() #ticks_ms()
+            # print(f"{motor_id} = {velocity} every {time.monotonic() - self.origin_time:.6f}")
+            # self.origin_time = time.monotonic() #ticks_ms()
 
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
