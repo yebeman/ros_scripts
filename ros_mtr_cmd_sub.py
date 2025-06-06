@@ -86,10 +86,13 @@ class motor_queue:
             raise ValueError("Invalid motor ID")
 
     def wait_until_filled(self):
-        while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
+        # while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
+        #     pass  # Busy-waiting until both queues have data
+        while self.motor_1.empty() :
             pass  # Busy-waiting until both queues have data
 
-        return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
+        # return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
+        return self.motor_1.get()
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
