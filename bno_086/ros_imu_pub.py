@@ -56,8 +56,11 @@ class IMUDataGenerator(Node):
 
     def publish_imu_data(self):
         """Publishes IMU data to separate topics."""
-        lin_acc, gyro, gravity = self.shared_data.get()
+        gravity, lin_acc, gyro = self.shared_data.get()
 
+        # normalize gravity
+        gravity = gravity/np.linalg.norm(gravity)
+        
         lin_acc_x, lin_acc_y, lin_acc_z = lin_acc
         gravity_x, gravity_y, gravity_z = gravity
         gyro_x, gyro_y, gyro_z = gyro
@@ -80,10 +83,8 @@ def retrieve_imu(shared_data, imu):
         start_time = time.monotonic() #ticks_ms()
 
         gravity, lin_acc, gyro = imu.gravity_linacc_gyro
-        # normalize gravity
-        gravity = gravity/np.linalg.norm(gravity)
 
-        shared_data.put(lin_acc, gyro, gravity)
+        shared_data.put(gravity, lin_acc, gyro)
 
         print(f"every {time.monotonic() - origin_time:.6f}")
         origin_time = time.monotonic() #ticks_ms()
