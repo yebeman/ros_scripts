@@ -90,7 +90,7 @@ def retrieve_imu(shared_data, imu):
         gyro_tuple = tuple(gyro)        # (gyro_x, gyro_y, gyro_z)
 
         # Put the three tuples into the shared_data queue
-        shared_data.put((lin_acc_tuple, gravity_tuple, gyro_tuple))
+        shared_data.put((gravity_tuple, lin_acc_tuple,  gyro_tuple))
 
         print(f"every {time.monotonic() - origin_time:.6f}")
         origin_time = time.monotonic() #ticks_ms()
