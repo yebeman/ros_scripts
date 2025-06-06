@@ -10,8 +10,8 @@ import time
 from dataclasses import dataclass
 
 # plot
-import matplotlib.pyplot as plt
-from collections import deque
+# import matplotlib.pyplot as plt
+# from collections import deque
 
 ##############################
 # URDF  <-> Encoder Conversion Factor 
@@ -85,15 +85,11 @@ class motor_queue:
         except AttributeError:
             raise ValueError("Invalid motor ID")
 
-   def wait_until_filled(self):
-        while self.motor_1.empty() or self.motor_2.empty() or
-              self.motor_3.empty() or self.motor_4.empty() or
-              self.motor_5.empty() or self.motor_6.empty() or :
+    def wait_until_filled(self):
+        while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             pass  # Busy-waiting until both queues have data
 
-        return self.motor_1.get(), self.motor_2.get(),
-               self.motor_3.get(), self.motor_4.get(),
-               self.motor_5.get(), self.motor_6.get() , 
+        return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
@@ -130,19 +126,19 @@ class MotorControl:
 
 
         #plot
-        self.position_data = deque(maxlen=2000)  # Store last 100 positions
-        self.start_time = None  # Capture start time in milliseconds
-        self.time_interval = 100  # Time interval (e.g., 100 ms per update)
-        self.fig, self.ax = plt.subplots()
-        self.line, = self.ax.plot([], [], 'bo-', label="Motor Position")
+        # self.position_data = deque(maxlen=2000)  # Store last 100 positions
+        # self.start_time = None  # Capture start time in milliseconds
+        # self.time_interval = 100  # Time interval (e.g., 100 ms per update)
+        # self.fig, self.ax = plt.subplots()
+        # self.line, = self.ax.plot([], [], 'bo-', label="Motor Position")
 
-        self.ax.set_xlabel("Time (ms)")
-        self.ax.set_ylabel("Position")
-        self.ax.set_title("Real-Time Knee Motor Position")
-        self.ax.legend()
-        self.ax.grid(True)
-        #plt.ion() 
-        plt.show()
+        # self.ax.set_xlabel("Time (ms)")
+        # self.ax.set_ylabel("Position")
+        # self.ax.set_title("Real-Time Knee Motor Position")
+        # self.ax.legend()
+        # self.ax.grid(True)
+        # #plt.ion() 
+        # plt.show()
 
         #print(f"Motor Active")
 
@@ -313,19 +309,19 @@ class MotorControl:
         self.motor_thread.join()
         self.command_thread.join()
 
-    def update_plot(self):
-        """Updates the live plot using real-time elapsed time."""
-        if len(self.position_data) > 0:  # Ensure we have data
-            time_values, position_values = zip(*self.position_data)  # Separate time & position
+    # def update_plot(self):
+    #     """Updates the live plot using real-time elapsed time."""
+    #     if len(self.position_data) > 0:  # Ensure we have data
+    #         time_values, position_values = zip(*self.position_data)  # Separate time & position
 
-            self.line.set_data(time_values, position_values)
+    #         self.line.set_data(time_values, position_values)
 
-            self.ax.relim()
-            self.ax.autoscale_view()
-            self.ax.set_xlim(max(0, time_values[-1] - 5000), time_values[-1] + 1000)  # Show last 5 sec
+    #         self.ax.relim()
+    #         self.ax.autoscale_view()
+    #         self.ax.set_xlim(max(0, time_values[-1] - 5000), time_values[-1] + 1000)  # Show last 5 sec
 
-            plt.draw()
-            self.fig.canvas.flush_events()  # Force redraw
+    #         plt.draw()
+    #         self.fig.canvas.flush_events()  # Force redraw
 
 
 class MotorListener(Node):
@@ -397,8 +393,8 @@ def main(args=None):
     
     rclpy.init(args=args)
 
-    pos_nn_q = motor_queue(max_size=1)
-    pos_rl_q = motor_queue(ax_size=1)
+    pos_nn_q = motor_queue(maxsize=1)
+    pos_rl_q = motor_queue(maxsize=1)
     vel_rl_q = motor_queue()
 
     state_request_queue = queue.Queue()
