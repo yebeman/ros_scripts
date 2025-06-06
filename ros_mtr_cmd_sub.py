@@ -56,6 +56,8 @@ ODRIVE_SET_MIN_TORQUE = -1.2
 ODRIVE_SET_MAX_TORQUE = 1.2 
 ################################
 
+#Joint names: ['left_ab_ad_joint', 'right_ab_ad_joint', 'left_hip_joint', 'right_hip_joint', 'left_knee_joint', 'right_knee_joint', 'left_ankle_joint', 'right_ankle_joint']
+
 ################################
 # Motor State
 class MOTOR_STATE (Enum):
@@ -270,12 +272,14 @@ class MotorControl:
             #     position = ( position + ABAD_OFFSET ) * ABAD_FACTOR
             # else :
             #     print(f"Motor_{motor_id} position {position} too large")
-            #     continue;  
+            #     continue;
+            # assuming target_pos is already limited when send?
             target_pos = ( target_pos + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
 
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
-            self.send_position(target_pos,target_vel,odrive_torque)
+            #self.send_position(target_pos,target_vel,odrive_torque)
+            print(f"target_pos,target_vel,odrive_torque = {target_pos},{target_vel},{odrive_torque}")
 
 
             self.prv_target_pos = target_pos
