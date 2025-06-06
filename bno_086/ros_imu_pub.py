@@ -85,12 +85,12 @@ def retrieve_imu(shared_data, imu):
         gravity, lin_acc, gyro = imu.gravity_linacc_gyro
 
         # Store each category in separate tuples
-        lin_acc_tuple = tuple(lin_acc)  # (lin_acc_x, lin_acc_y, lin_acc_z)
-        gravity_tuple = tuple(gravity)  # (gravity_x, gravity_y, gravity_z)
-        gyro_tuple = tuple(gyro)        # (gyro_x, gyro_y, gyro_z)
+        gravity_array = np.array(gravity)
+        lin_acc_array = np.array(lin_acc)
+        gyro_array = np.array(gyro)
 
         # Put the three tuples into the shared_data queue
-        shared_data.put((gravity_tuple, lin_acc_tuple,  gyro_tuple))
+        shared_data.put((gravity_array, lin_acc_array,  gyro_array))
 
         print(f"every {time.monotonic() - origin_time:.6f}")
         origin_time = time.monotonic() #ticks_ms()
