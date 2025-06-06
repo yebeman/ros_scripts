@@ -81,7 +81,6 @@ def retrieve_imu(shared_data, imu):
 
         gravity, lin_acc, gyro = imu.gravity_linacc_gyro
         # normalize gravity
-        gravity = gravity
         gravity = gravity/np.linalg.norm(gravity)
 
         shared_data.put(lin_acc, gyro, gravity)
