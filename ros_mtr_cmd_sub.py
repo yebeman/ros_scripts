@@ -212,17 +212,17 @@ class MotorControl:
     def process_positions(self):
         while self.running:
 
-            # motor needs to be started
-            if self.motor_state == MOTOR_STATE.STOPPED:
-                print(f"Motors havn't been initialied yet")
-                continue
-
             # note = 
             # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable            
             target_pos = self.pos_nn_q.wait_until_filled() # only has 1 queue size
+
+            # motor needs to be started
+            if self.motor_state == MOTOR_STATE.STOPPED:
+                print(f"Motors havn't been initialied yet")
+                continue
 
             # get current position and vel          
             cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size
