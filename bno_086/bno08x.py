@@ -552,7 +552,7 @@ class BNO08X:
                 if self._check_id():
                     break
             except:  # pylint:disable=bare-except
-                time.sleep(1) # sleep_ms(500)
+                time.sleep(0.5) # sleep_ms(500)
         else:
             raise RuntimeError("Could not read ID")
         
@@ -626,7 +626,7 @@ class BNO08X:
         # start_time = ticks_ms()
         # while  ticks_diff(ticks_ms(), start_time) < FEATURE_ENABLE_TIMEOUT :
         start_time = time.monotonic() 
-        while (time.monotonic() - start_time) * 1000 < DEFAULT_TIMEOUT:
+        while ( (time.monotonic() - start_time) * 1000 )  < FEATURE_ENABLE_TIMEOUT:
             self._process_available_packets(max_packets=10)
             self._dbg("Feature IDs",self._readings)
             if feature_id in self._readings:
@@ -784,6 +784,21 @@ class BNO08X:
         return (Roll, Tilt, Pan)
 
     @property
+    def gravity_linacc_gyro(self):
+        
+        new_packet = self._read_packet()
+        self._handle_packet(new_packet)
+        
+        try:
+            gyro    = self._readings[BNO_REPORT_GYROSCOPE]
+            lin_acc = self._readings[BNO_REPORT_LINEAR_ACCELERATION]
+            gravity = self._readings[BNO_REPORT_GRAVITY]
+        except KeyError:
+            raise RuntimeError("No raw gyro report found, is it enabled?") from None
+        
+        return (gyro,lin_acc,gravity)
+
+    @property
     def geomagnetic_quat(self):
         #A quaternion representing the current geomagnetic rotation vector
         self._process_available_packets()
@@ -892,10 +907,10 @@ class BNO08X:
         self._dbg("MOTION ENGINE TARE BEING DONE...")
         self._send_ME_cde(ME_TARE_CDE,
             [
-                0,					#Perform Tare Now
-                axis,				#Perform All axis (7) by default
-                outputs, 			#Apply to all motion outputs (2) by default
-                0, 0, 0, 0, 0, 0,	#6-11 Reserved
+                0,                  #Perform Tare Now
+                axis,               #Perform All axis (7) by default
+                outputs,            #Apply to all motion outputs (2) by default
+                0, 0, 0, 0, 0, 0,   #6-11 Reserved
             ]
         )
         self._calibration_complete = True
@@ -950,7 +965,7 @@ class BNO08X:
         #start_time = ticks_ms()
         #while ticks_diff(ticks_ms(), start_time) < DEFAULT_TIMEOUT:
         start_time = time.monotonic() 
-        while (time.monotonic() - start_time) * 1000 < DEFAULT_TIMEOUT:
+        while ( (time.monotonic() - start_time) * 1000 )  < DEFAULT_TIMEOUT:
             self._process_available_packets()
             if self._dcd_saved_at > start_time:
                 return
@@ -996,7 +1011,7 @@ class BNO08X:
         # start_time = ticks_ms()
         # while ticks_diff(ticks_ms(), start_time) < timeout :
         start_time = time.monotonic() 
-        while (time.monotonic() - start_time) * 1000 < DEFAULT_TIMEOUT:
+        while ( (time.monotonic() - start_time) * 1000 ) < timeout:
             new_packet = self._wait_for_packet()
             self._dbg("NEW PACKET : ")
             if self._debug:
@@ -1017,7 +1032,7 @@ class BNO08X:
 #         start_time = ticks_ms()
 #         while  ticks_diff(ticks_ms(), start_time) < timeout :
         start_time = time.monotonic() 
-        while (time.monotonic() - start_time) * 1000 < DEFAULT_TIMEOUT: 
+        while ( (time.monotonic() - start_time) * 1000 ) < timeout: 
             
             if not self._data_ready:
                 print("NOT READY")

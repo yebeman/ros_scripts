@@ -11,6 +11,12 @@ import rclpy
 from rclpy.node import Node
 from std_msgs.msg import String
 
+#
+#10 -- 90ms
+#20 -- 60ms
+#30 -- 20ms
+#40 -- consistent 20ms - max seen 0.038250 / no repeats seen
+#50 -- 
 
 class BNO086Data:
     """A shared data structure to hold IMU readings with timestamp."""
@@ -63,18 +69,21 @@ class IMUDataGenerator(Node):
 def retrieve_imu(shared_data, imu):
     """Continuously updates IMU data at 100Hz."""
     while True:
-        lin_accel = imu.acc_linear
 
+        start_time = time.monotonic() #ticks_ms()
 
-        gyro = imu.gyro
-
+        gravity, lin_acc, gyro = imu.gravity_linacc_gyro
         # normalize gravity
-        gravity = imu.gravity
+        gravity = gravity
         gravity = gravity/np.linalg.norm(gravity)
 
+        shared_data.update(lin_acc, gyro, gravity)
 
-        shared_data.update(lin_accel, gyro, gravity)
-        time.sleep(0.01)  # 100 Hz 
+        print(f"every {time.monotonic() - origin_time:.6f}")
+        origin_time = time.monotonic() #ticks_ms()
+        elapsed_time = time.monotonic() - start_time
+        sleep_time = max(0, 0.021 - elapsed_time)  #  no negative number
+        time.sleep(sleep_time)
 
 def main(args=None):
 
@@ -85,10 +94,10 @@ def main(args=None):
     i2c = multi_biped_i2c(overlay)
     imu = BNO08X(i2c, debug=False, address=0x4B)
 
-    imu.enable_feature(BNO_REPORT_ACCELEROMETER, 20)
-    imu.enable_feature(BNO_REPORT_LINEAR_ACCELERATION,20 )
-    imu.enable_feature(BNO_REPORT_GYROSCOPE,20 )
-    imu.enable_feature(BNO_REPORT_GRAVITY, 10)
+    # imu.enable_feature(BNO_REPORT_ACCELEROMETER, 50)
+    imu.enable_feature(BNO_REPORT_LINEAR_ACCELERATION,50 )
+    imu.enable_feature(BNO_REPORT_GYROSCOPE,50 )
+    imu.enable_feature(BNO_REPORT_GRAVITY, 50)
     print("BNO08x sensors enabling : Done\n")
 
     rclpy.init(args=args)
