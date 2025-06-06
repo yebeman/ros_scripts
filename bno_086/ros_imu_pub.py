@@ -58,13 +58,17 @@ class IMUDataGenerator(Node):
         """Publishes IMU data to separate topics."""
         lin_acc, gyro, gravity = self.shared_data.get()
 
-        self.gyro_pub.publish(String(data=f"{gyro[0]},{gyro[1]},{gyro[2]}"))
-        self.gravity_pub.publish(String(data=f"{gravity[0]},{gravity[1]},{gravity[2]}"))
-        self.lin_acc.publish(String(data=f"{lin_acc[0]},{lin_acc[1]},{lin_acc[2]}"))
+        lin_acc_x, lin_acc_y, lin_acc_z = lin_acc
+        gravity_x, gravity_y, gravity_z = gravity
+        gyro_x, gyro_y, gyro_z = gyro
 
-        #print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro[0], gyro[1], gyro[2]))
-        #print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity[0], gravity[1], gravity[2]))
-        print("lin_acc\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(lin_acc[0], lin_acc[1], lin_acc[2]))
+        self.gyro_pub.publish(String(data=f"{gyro_x},{gyro_y},{gyro_z}"))
+        self.gravity_pub.publish(String(data=f"{gravity_x},{gravity_y},{gravity_z}"))
+        self.lin_acc.publish(String(data=f"{lin_acc_x},{lin_acc_y},{lin_acc_z}"))
+
+        # print("Lin Acceleration\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\tm/s²".format(accel_x, accel_y, accel_z))
+        # print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity_x, gravity_y, gravity_z))
+        print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro_x, gyro_y, gyro_z))
 
 
 def retrieve_imu(shared_data, imu):
