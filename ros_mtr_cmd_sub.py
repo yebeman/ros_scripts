@@ -86,13 +86,10 @@ class motor_queue:
             raise ValueError("Invalid motor ID")
 
     def wait_until_filled(self):
-        # while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
-        #     pass  # Busy-waiting until both queues have data
-        while self.motor_1.empty() :
+        while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             pass  # Busy-waiting until both queues have data
 
-        # return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
-        return self.motor_1.get()
+        return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
@@ -371,6 +368,13 @@ class MotorListener(Node):
     def listener_callback(self, msg, motor_id):
         """Stores received motor position data in the queue."""
         self.pos_nn_q.save_to_queue(motor_id, msg.data)
+
+        #for now Zero everything else
+        self.pos_nn_q.save_to_queue(2, 0.0)
+        self.pos_nn_q.save_to_queue(3, 0.0)
+        self.pos_nn_q.save_to_queue(4, 0.0)
+        self.pos_nn_q.save_to_queue(5, 0.0)
+        self.pos_nn_q.save_to_queue(6, 0.0)
 
     def current_pos_callback(self, msg, motor_id):
         self.pos_rl_q.save_to_queue(motor_id, msg.data)
