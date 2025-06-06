@@ -68,6 +68,8 @@ class IMUDataGenerator(Node):
 
 def retrieve_imu(shared_data, imu):
     """Continuously updates IMU data at 100Hz."""
+    origin_time = time.monotonic() #ticks_ms()  
+
     while True:
 
         start_time = time.monotonic() #ticks_ms()
