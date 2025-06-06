@@ -60,7 +60,7 @@ class IMUDataGenerator(Node):
 
         # normalize gravity
         gravity = gravity/np.linalg.norm(gravity)
-        
+
         lin_acc_x, lin_acc_y, lin_acc_z = lin_acc
         gravity_x, gravity_y, gravity_z = gravity
         gyro_x, gyro_y, gyro_z = gyro
@@ -71,7 +71,7 @@ class IMUDataGenerator(Node):
 
         # print("Lin Acceleration\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\tm/s²".format(accel_x, accel_y, accel_z))
         # print("Gravity\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gravity_x, gravity_y, gravity_z))
-        print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro_x, gyro_y, gyro_z))
+        #print("Gyroscope\tX: {:+.3f}\tY: {:+.3f}\tZ: {:+.3f}\trads/s".format(gyro_x, gyro_y, gyro_z))
 
 
 def retrieve_imu(shared_data, imu):
@@ -84,7 +84,13 @@ def retrieve_imu(shared_data, imu):
 
         gravity, lin_acc, gyro = imu.gravity_linacc_gyro
 
-        shared_data.put(gravity, lin_acc, gyro)
+        # Store each category in separate tuples
+        lin_acc_tuple = tuple(lin_acc)  # (lin_acc_x, lin_acc_y, lin_acc_z)
+        gravity_tuple = tuple(gravity)  # (gravity_x, gravity_y, gravity_z)
+        gyro_tuple = tuple(gyro)        # (gyro_x, gyro_y, gyro_z)
+
+        # Put the three tuples into the shared_data queue
+        shared_data.put((lin_acc_tuple, gravity_tuple, gyro_tuple))
 
         print(f"every {time.monotonic() - origin_time:.6f}")
         origin_time = time.monotonic() #ticks_ms()
