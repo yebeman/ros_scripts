@@ -8,6 +8,7 @@ from std_msgs.msg import String, Float32
 from enum import Enum
 import time
 from dataclasses import dataclass
+import numpy as np
 
 # plot
 # import matplotlib.pyplot as plt
@@ -89,7 +90,9 @@ class motor_queue:
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             pass  # Busy-waiting until both queues have data
 
-        return self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), self.motor_4.get(), self.motor_5.get(), self.motor_6.get() 
+        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
+                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
+
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
@@ -162,9 +165,9 @@ class MotorControl:
 
     def send_position(
         self,
-        position: tuple = (0, 0, 0, 0, 0, 0),
-        velocity_feedforward: tuple = (0, 0, 0, 0, 0, 0),
-        torque_feedforward: tuple = (0, 0, 0, 0, 0, 0)
+        position: np.array((0, 0, 0, 0, 0, 0)),
+        velocity_feedforward: np.array((0, 0, 0, 0, 0, 0)),
+        torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
         for index in range(NO_OF_MOTORS):            
             try:
