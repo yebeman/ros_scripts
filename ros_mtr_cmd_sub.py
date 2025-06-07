@@ -50,7 +50,7 @@ DAMPING   = 0.167
 
 # motor link length
 # TO-DO - measure actual radius 
-FIXED_LINKS_LENGTH = (0.2, 0.2, 0.32, 0.32, 0.24, 0.24)
+FIXED_LINKS_LENGTH = np.array((0.2, 0.2, 0.32, 0.32, 0.24, 0.24))
 
 # max od torque
 ODRIVE_SET_MIN_TORQUE = -1.2 
