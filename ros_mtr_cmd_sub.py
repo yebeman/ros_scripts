@@ -177,7 +177,7 @@ class MotorControl:
                 print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
-        print("am here")
+        print("am here start ")
         # self.bus.send(can.Message(
         #     arbitration_id=(mtr_id << 5 | 0x07),
         #     data=struct.pack('<I', 8),
@@ -379,8 +379,23 @@ class MotorListener(Node):
     def current_pos_callback(self, msg, motor_id):
         self.pos_rl_q.save_to_queue(motor_id, msg.data)
 
+        # for now Zero everything else
+        # do it only once
+        if motor_id == 1:   
+            self.pos_rl_q.save_to_queue(4, 0.0)
+            self.pos_rl_q.save_to_queue(5, 0.0)
+            self.pos_rl_q.save_to_queue(6, 0.0)
+
     def current_vel_callback(self, msg, motor_id):
         self.vel_rl_q.save_to_queue(motor_id, msg.data)
+
+        # for now Zero everything else
+        # do it only once
+        if motor_id == 1:   
+            self.vel_rl_q.save_to_queue(4, 0.0)
+            self.vel_rl_q.save_to_queue(5, 0.0)
+            self.vel_rl_q.save_to_queue(6, 0.0)
+
 
     def all_motor_callback(self, msg):
         """Handles start/stop commands for all motors."""
