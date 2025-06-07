@@ -281,7 +281,7 @@ class MotorControl:
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
-            print(f"\n target_pos,target_vel,odrive_torque = {target_pos},{target_vel},{odrive_torque}")
+            print(f"\n\n target_pos = {target_pos} \ntarget_vel = {target_vel} \nodrive_torque = {odrive_torque}")
 
 
             self.prv_target_pos = target_pos
