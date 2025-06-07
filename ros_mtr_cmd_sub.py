@@ -111,7 +111,7 @@ class MotorControl:
         self.pos_rl_q = pos_rl_q
         self.vel_rl_q = vel_rl_q
 
-        self.prv_target_pos = (0,0,0,0,0,0)
+        self.prv_pos_nn = (0,0,0,0,0,0)
         self.prv_torque     = 0
 
         self.running = True
@@ -222,7 +222,7 @@ class MotorControl:
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable            
-            target_pos = self.pos_nn_q.wait_until_filled() # only has 1 queue size
+            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size
 
             # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
@@ -234,11 +234,11 @@ class MotorControl:
             cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size
 
             # calculate pos error
-            pos_error = target_pos - cur_pos
+            pos_error = pos_nn - cur_pos
 
             # calculate vel error
             # calculate nn velocity 
-            target_vel = ( target_pos - self.prv_target_pos ) / NN_ACTION_INTERVAL
+            target_vel = ( pos_nn - self.prv_pos_nn ) / NN_ACTION_INTERVAL
             vel_error  = target_vel - cur_vel
 
             # then calculate torque            
@@ -276,15 +276,15 @@ class MotorControl:
             #     print(f"Motor_{motor_id} position {position} too large")
             #     continue;
             # assuming target_pos is already limited when send?
-            target_pos = ( target_pos + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
+            target_pos = ( pos_nn + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
 
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
-            print(f"\n\n target_pos = {target_pos} \ntarget_vel = {target_vel} \nodrive_torque = {odrive_torque}")
+            print(f"\n\n pos_nn = {pos_nn} \n target_pos = {target_pos} \ntarget_vel = {target_vel} \nodrive_torque = {odrive_torque}")
 
 
-            self.prv_target_pos = target_pos
+            self.prv_pos_nn = pos_nn
             self.prv_torque     = torque
 
               
