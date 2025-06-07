@@ -281,11 +281,12 @@ class MotorControl:
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
-            print(f"\n\n pos_nn = {pos_nn} \n target_pos = {target_pos} \ntarget_vel = {target_vel} \nodrive_torque = {odrive_torque}")
+            print(f"\n\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
 
 
-            self.prv_pos_nn = pos_nn
-            self.prv_torque     = torque
+
+            self.prv_pos_nn  = pos_nn
+            self.prv_torque  = torque
 
               
     def process_commands(self):
