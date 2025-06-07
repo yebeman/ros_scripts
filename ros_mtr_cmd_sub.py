@@ -257,7 +257,8 @@ class MotorControl:
             odrive_torque = ( force_at_link + 71.897 ) / 7468.5
         
             # apply cliping to get max torque
-            odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
+            #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
+            odrive_torque = np.clip(odrive_torque, ODRIVE_SET_MIN_TORQUE, ODRIVE_SET_MAX_TORQUE)
 
             # calculate pos_rl 
             # if ( motor_id   == 1 or motor_id == 4 ) :       # knee
@@ -367,6 +368,8 @@ class MotorListener(Node):
 
         # Subscription for /all_motor/cmd with String commands
         self.create_subscription(String, self.all_motor_cmd_topic, self.all_motor_callback, 3)
+
+        print("Listening...")
 
     def listener_callback(self, msg, motor_id):
         """Stores received motor position data in the queue."""
