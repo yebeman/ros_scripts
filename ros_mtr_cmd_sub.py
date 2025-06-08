@@ -246,9 +246,12 @@ class MotorControl:
 
             # calculate vel error
             # calculate nn velocity 
-            elapsed_time = np.maximum(time.monotonic() - cmd_sample_time, 1)
+            elapsed_time = time.monotonic() - cmd_sample_time
+            elapsed_time = np.where(elapsed_time <= 0, 1, elapsed_time)
             target_vel = ( pos_nn - self.prv_pos_nn ) / elapsed_time
             cmd_sample_time = time.monotonic()
+            print(elapsed_time)
+            
             target_vel = np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
 
             vel_error  = target_vel - cur_vel
