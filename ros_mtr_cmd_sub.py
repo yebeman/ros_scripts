@@ -58,6 +58,7 @@ ODRIVE_SET_MAX_TORQUE = 1.2
 ################################
 
 #Joint names: ['left_ab_ad_joint', 'right_ab_ad_joint', 'left_hip_joint', 'right_hip_joint', 'left_knee_joint', 'right_knee_joint', 'left_ankle_joint', 'right_ankle_joint']
+#motor names:      motor_3       ,     motor_6        ,     motor_2     ,     motor_5      ,     motor_1      ,      motor_4      ,         NA               NA
 
 ################################
 # Motor State
@@ -90,8 +91,8 @@ class motor_queue:
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             pass  # Busy-waiting until both queues have data
 
-        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
-                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
+        return np.array([self.motor_3.get(), self.motor_6.get(), self.motor_2.get(), 
+                         self.motor_5.get(), self.motor_1.get(), self.motor_4.get()])
 
 
     def clear_queues(self):
