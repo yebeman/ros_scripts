@@ -97,7 +97,7 @@ class motor_queue:
 
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
 
-           if time.monotonic() - start_time > 0.05:  # 50ms timeout
+           if time.monotonic() - start_time > 0.05: 
                 print("Timeout reached, exiting loop.")   
                 return None  
             #pass  # Busy-waiting until all queues have data
@@ -255,7 +255,7 @@ class MotorControl:
             pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6
 
             if pos_nn is None:
-                pass
+                continue
 
             # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
@@ -268,7 +268,7 @@ class MotorControl:
 
             if cur_pos is None or cur_pos is None:
                 print(f"Error - cur_pos or cur_pos should have something ")
-                pass
+                continue
 
             # calculate pos error
             pos_error = pos_nn - cur_pos
