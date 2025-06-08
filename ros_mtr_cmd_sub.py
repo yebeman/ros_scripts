@@ -33,9 +33,8 @@ ABAD_FACTOR = 1.36/0.88
 ABAD_OFFSET = 0
 
 # position conversion 
-URDF_TO_REAL_POS_FACTOR = (ABAD_FACTOR,ABAD_FACTOR,HIP_FACTOR,HIP_FACTOR,KNEE_FACTOR,KNEE_FACTOR)
-URDF_TO_REAL_POS_OFFSET = (ABAD_OFFSET,ABAD_OFFSET,-1*HIP_OFFSET,-1*HIP_OFFSET,KNEE_OFFSET,KNEE_OFFSET)
-
+URDF_TO_REAL_POS_FACTOR = (KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
+URDF_TO_REAL_POS_OFFSET = (KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET)
 # number of motots
 NO_OF_MOTORS = 6
 ################################
@@ -54,8 +53,8 @@ DAMPING   = 0.167
 FIXED_LINKS_LENGTH = np.array((0.23, 0.23+0.245,0.483,0.23,0.23+0.245,0.483))
 
 # max od torque
-ODRIVE_SET_MIN_TORQUE = -1.2 
-ODRIVE_SET_MAX_TORQUE = 1.2 
+ODRIVE_SET_MIN_TORQUE = -1.145 
+ODRIVE_SET_MAX_TORQUE = 1.145
 
 # max velocity 
 ODRIVE_MAX_VEL = 7.0
@@ -231,7 +230,7 @@ class MotorControl:
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable            
-            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size liimit
+            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6
 
             # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
@@ -298,8 +297,6 @@ class MotorControl:
             print(f"\n\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
             print(f"\ncur_pos = {cur_pos.tolist()} \n cur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
             print(f"\ntorque = {torque.tolist()} \n force_at_link = {force_at_link.tolist()}")
-
-
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
