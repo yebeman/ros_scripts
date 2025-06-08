@@ -233,9 +233,9 @@ class MotorControl:
         while self.running:
 
             try:
-                command = self.state_request_queue.get(0.01) # wait for 10ms
+                command = self.state_request_queue.get(0.001) # wait for 1ms
 
-               if command == "stop" and self.motor_state == MOTOR_STATE.INITIALIZED:
+                if command == "stop" and self.motor_state == MOTOR_STATE.INITIALIZED:
 
                     for id in range(1,7):
                         self.stop_motor(id)
