@@ -245,6 +245,7 @@ class MotorControl:
             except queue.Empty:
                 print("Timeout reached, no command available.")
 
+            print("checking for positions ...")
             # note = 
             # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
 
