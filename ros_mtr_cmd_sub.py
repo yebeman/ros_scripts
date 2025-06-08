@@ -55,6 +55,10 @@ FIXED_LINKS_LENGTH = np.array((0.2, 0.2, 0.32, 0.32, 0.24, 0.24))
 # max od torque
 ODRIVE_SET_MIN_TORQUE = -1.2 
 ODRIVE_SET_MAX_TORQUE = 1.2 
+
+# max velocity 
+ODRIVE_MAX_VEL = 7.0
+ODRIVE_MIN_VEL = -7.0
 ################################
 
 #Joint names: ['left_ab_ad_joint', 'right_ab_ad_joint', 'left_hip_joint', 'right_hip_joint', 'left_knee_joint', 'right_knee_joint', 'left_ankle_joint', 'right_ankle_joint']
@@ -216,6 +220,9 @@ class MotorControl:
         
 
     def process_positions(self):
+
+        cmd_sample_time = time.monotonic()
+
         while self.running:
 
             # note = 
@@ -223,7 +230,7 @@ class MotorControl:
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable            
-            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size
+            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size liimit
 
             # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
@@ -231,15 +238,19 @@ class MotorControl:
                 continue
 
             # get current position and vel          
-            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size
-            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size
+            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
+            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
 
             # calculate pos error
             pos_error = pos_nn - cur_pos
 
             # calculate vel error
             # calculate nn velocity 
-            target_vel = ( pos_nn - self.prv_pos_nn ) / NN_ACTION_INTERVAL
+            elapsed_time = np.maximum(time.monotonic() - cmd_sample_time, 1)
+            target_vel = ( pos_nn - self.prv_pos_nn ) / elapsed_time
+            cmd_sample_time = time.monotonic
+            target_vel = np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
+
             vel_error  = target_vel - cur_vel
 
             # then calculate torque            
