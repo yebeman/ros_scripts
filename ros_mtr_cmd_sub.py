@@ -97,7 +97,7 @@ class motor_queue:
 
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
 
-           if time.monotonic() - start_time > 0.05: 
+           if time.monotonic() - start_time > 0.1: 
                 #print("Timeout reached, exiting loop.")   
                 return None  
             #pass  # Busy-waiting until all queues have data
