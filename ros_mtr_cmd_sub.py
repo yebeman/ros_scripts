@@ -464,9 +464,9 @@ def main(args=None):
 
     pos_nn_q = motor_queue(maxsize=1)
     pos_rl_q = motor_queue(maxsize=1)
-    vel_rl_q = motor_queue()
+    vel_rl_q = motor_queue(maxsize=1)
 
-    state_request_queue = queue.Queue()
+    state_request_queue = queue.Queue(maxsize=1)
 
     listener_node = MotorListener(pos_nn_q,state_request_queue,pos_rl_q,vel_rl_q)
     listener_thread = threading.Thread(target=rclpy.spin, args=(listener_node,), daemon=True)
