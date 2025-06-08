@@ -323,9 +323,9 @@ class MotorControl:
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
-            print(f"\n\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
-            print(f"cur_pos = {cur_pos.tolist()} \n cur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
-            print(f"torque = {torque.tolist()} \n force_at_link = {force_at_link.tolist()}")
+            print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
+            print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
+            print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()}")
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
@@ -336,7 +336,7 @@ class MotorControl:
 
     def process_commands(self):
 
-        print("Processing commands ...")
+        print("Waiting for Start command ...")
         
         command = self.state_request_queue.get()
 
