@@ -98,7 +98,7 @@ class motor_queue:
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
 
            if time.monotonic() - start_time > 0.05: 
-                print("Timeout reached, exiting loop.")   
+                #print("Timeout reached, exiting loop.")   
                 return None  
             #pass  # Busy-waiting until all queues have data
 
@@ -482,7 +482,7 @@ def main(args=None):
     except KeyboardInterrupt:
         listener_node.destroy_node()
         rclpy.shutdown()
-        motor_control.stop()  # Stop motor threads safely
+        # motor_control.stop()  # Stop motor threads safely
         listener_thread.join()
 
 if __name__ == '__main__':
