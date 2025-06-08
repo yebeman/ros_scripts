@@ -232,8 +232,9 @@ class MotorControl:
 
         while self.running:
 
-            try:
-                command = self.state_request_queue.get(0.001) # wait for 1ms
+            if not self.state_request_queue.empty():
+
+                command = self.state_request_queue.get() 
 
                 if command == "stop" and self.motor_state == MOTOR_STATE.INITIALIZED:
 
@@ -242,10 +243,10 @@ class MotorControl:
 
                     self.motor_state = MOTOR_STATE.STOPPED
                     break
-            except queue.Empty:
-                print("Timeout reached, no command available.")
+                else :
+                    print("command not recognized")
 
-            print("checking for positions ...")
+
             # note = 
             # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
 
