@@ -250,8 +250,8 @@ class MotorControl:
             elapsed_time = np.where(elapsed_time <= 0, 1, elapsed_time)
             target_vel = ( pos_nn - self.prv_pos_nn ) / elapsed_time
             cmd_sample_time = time.monotonic()
-            print(elapsed_time)
-            
+            print(f"elapsed_time = {elapsed_time}")
+
             target_vel = np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
 
             vel_error  = target_vel - cur_vel
@@ -297,7 +297,7 @@ class MotorControl:
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
             print(f"\n\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
-            print(f"\ncur_pos = {cur_pos.tolist()} \n ur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()} \ntarget_vel = {target_vel.tolist()}")
+            print(f"\ncur_pos = {cur_pos.tolist()} \n cur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()}")
             print(f"\ntorque = {torque.tolist()} \n force_at_link = {force_at_link.tolist()}")
 
 
