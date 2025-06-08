@@ -92,8 +92,15 @@ class motor_queue:
             raise ValueError("Invalid motor ID")
 
     def wait_until_filled(self):
+
+        start_time = time.monotonic() 
+
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
-            pass  # Busy-waiting until both queues have data
+
+           if time.monotonic() - start_time > 0.05:  # 50ms timeout
+                print("Timeout reached, exiting loop.")   
+                return None  
+            #pass  # Busy-waiting until all queues have data
 
         return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
                          self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
@@ -126,15 +133,14 @@ class MotorControl:
         #     self.set_up_motor(id)
 
         # Start both threads within the class
-        self.motor_thread   = threading.Thread(target=self.process_positions, daemon=True)
-        self.command_thread = threading.Thread(target=self.process_commands, daemon=True)
+        # self.motor_thread   = threading.Thread(target=self.process_positions, daemon=True)
+        # self.command_thread = threading.Thread(target=self.process_commands, daemon=True)
 
-        self.motor_thread.start()
-        self.command_thread.start()
+        # self.motor_thread.start()
+        # self.command_thread.start()
+        self.process_commands()
 
-        print("Ready to act ...")
-
-
+        
         #plot
         # self.position_data = deque(maxlen=2000)  # Store last 100 positions
         # self.start_time = None  # Capture start time in milliseconds
@@ -221,16 +227,33 @@ class MotorControl:
 
     def process_positions(self):
 
+        print("Processing positions ...")
         cmd_sample_time = time.monotonic()
 
         while self.running:
+
+            try:
+                command = self.state_request_queue.get(0.01) # wait for 10ms
+
+               if command == "stop" and self.motor_state == MOTOR_STATE.INITIALIZED:
+
+                    for id in range(1,7):
+                        self.stop_motor(id)
+
+                    self.motor_state = MOTOR_STATE.STOPPED
+                    break
+            except queue.Empty:
+                print("Timeout reached, no command available.")
 
             # note = 
             # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
 
             # are all motor queue filled?
-            # then extract all of them and save in to a variable            
+            # then extract all of them and save in to a variable         
             pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6
+
+            if pos_nn == None:
+                pass
 
             # motor needs to be started
             if self.motor_state == MOTOR_STATE.STOPPED:
@@ -240,6 +263,10 @@ class MotorControl:
             # get current position and vel          
             cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
             cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
+
+            if cur_pos == None or cur_pos == None:
+                print(f"Error - cur_pos or cur_pos should have something ")
+                pass
 
             # calculate pos error
             pos_error = pos_nn - cur_pos
@@ -300,29 +327,25 @@ class MotorControl:
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
+        
+        # if its still running 
+        if self.running:
+            self.process_commands()
 
-              
     def process_commands(self):
-        while self.running:
-            command = self.state_request_queue.get()
 
-            if command == "start" and self.motor_state == MOTOR_STATE.STOPPED:
-                
-                for id in range(1,7):
-                    self.init_motor(id)
+        print("Processing commands ...")
+        
+        command = self.state_request_queue.get()
 
-                self.motor_state = MOTOR_STATE.INITIALIZED
-                print(f"Received command: {command}")
-            elif command == "stop" and self.motor_state == MOTOR_STATE.INITIALIZED:
+        if command == "start" and self.motor_state == MOTOR_STATE.STOPPED:
+            
+            for id in range(1,7):
+                self.init_motor(id)
 
-                for id in range(1,7):
-                    self.stop_motor(id)
-
-                self.motor_state = MOTOR_STATE.STOPPED
-                print(f"Received command: {command}")
-            else:
-                print(f"Command Not Recognized: {command}")
-
+            self.motor_state = MOTOR_STATE.INITIALIZED
+            
+            self.process_positions() # call positions processor
 
     def stop(self):
         self.running = False
