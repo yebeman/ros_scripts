@@ -193,7 +193,7 @@ class MotorControl:
                 print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
-        print("am here start ")
+        print("started motor for {mtr_id}")
         # self.bus.send(can.Message(
         #     arbitration_id=(mtr_id << 5 | 0x07),
         #     data=struct.pack('<I', 8),
@@ -216,7 +216,7 @@ class MotorControl:
         # ))
     
     def stop_motor(selfi,mtr_id):
-        print("am here")
+        print("Stopped motor for {mtr_id}")
 
         # self.bus.send(can.Message(
         #     arbitration_id=(mtr_id << 5 | 0x07),
@@ -324,8 +324,8 @@ class MotorControl:
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
             print(f"\n\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
-            print(f"\ncur_pos = {cur_pos.tolist()} \n cur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
-            print(f"\ntorque = {torque.tolist()} \n force_at_link = {force_at_link.tolist()}")
+            print(f"cur_pos = {cur_pos.tolist()} \n cur_vel = {cur_vel.tolist()} \n pos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
+            print(f"torque = {torque.tolist()} \n force_at_link = {force_at_link.tolist()}")
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
