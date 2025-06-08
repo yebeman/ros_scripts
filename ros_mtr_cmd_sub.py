@@ -269,7 +269,7 @@ class MotorControl:
             # F1 = 7468.5*Torque_real - 71.897
             # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
             force_at_24 = torque / FIXED_LINKS_LENGTH
-            force_at_link = (FIXED_LINKS_LENGTH/0.24) * force_at_24
+            force_at_link = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * force_at_24
             odrive_torque = ( force_at_link + 71.897 ) / 7468.5
         
             # apply cliping to get max torque
