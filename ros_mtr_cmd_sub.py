@@ -91,8 +91,8 @@ class motor_queue:
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             pass  # Busy-waiting until both queues have data
 
-        return np.array([self.motor_3.get(), self.motor_6.get(), self.motor_2.get(), 
-                         self.motor_5.get(), self.motor_1.get(), self.motor_4.get()])
+        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
+                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
 
 
     def clear_queues(self):
