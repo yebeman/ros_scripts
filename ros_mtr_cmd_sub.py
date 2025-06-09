@@ -201,7 +201,7 @@ class MotorControl:
         #         print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
-        print("started motor for {mtr_id}")
+        print(f"started motor for {mtr_id}")
 
         if (mtr_id > 3):
             return
@@ -212,23 +212,23 @@ class MotorControl:
             is_extended_id=False
         ))
 
-        # Wait for the axis to enter closed-loop control
-        for msg in self.bus:
-            if msg.arbitration_id == (mtr_id << 5 | 0x01):  # 0x01: Heartbeat
-                #print(f"got here {msg.arbitration_id}")
-                error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
-                if state == 8:  # 8: AxisState.CLOSED_LOOP_CONTROL
-                    #print(f"got here2")
-                    break
+        # # Wait for the axis to enter closed-loop control
+        # for msg in self.bus:
+        #     if msg.arbitration_id == (mtr_id << 5 | 0x01):  # 0x01: Heartbeat
+        #         #print(f"got here {msg.arbitration_id}")
+        #         error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+        #         if state == 8:  # 8: AxisState.CLOSED_LOOP_CONTROL
+        #             #print(f"got here2")
+        #             break
                 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-            data=struct.pack('<ff', 1.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
-            is_extended_id=False
-        ))
+        # self.bus.send(can.Message(
+        #     arbitration_id=(mtr_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
+        #     data=struct.pack('<ff', 1.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
+        #     is_extended_id=False
+        # ))
     
     def stop_motor(selfi,mtr_id):
-        print("Stopped motor for {mtr_id}")
+        print(f"Stopped motor for {mtr_id}")
 
         if (mtr_id > 3):
             return
