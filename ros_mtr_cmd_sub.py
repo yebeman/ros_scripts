@@ -182,13 +182,12 @@ class MotorControl:
         velocity_feedforward: np.array((0, 0, 0, 0, 0, 0)),
         torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
-
         mtr_id = 1
         print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
         try:
             self.bus.send(can.Message(
                 arbitration_id=(mtr_id << 5 | 0x0C),
-                data=struct.pack('<fff', float(position[0]), float(velocity_feedforward[0]), float(torque_feedforward[0])),
+                data=struct.pack('<fhh', position[0], int(velocity_feedforward[0] * 1000), int(torque_feedforward[0] * 1000)),
                 is_extended_id=False
             ))
         except OSError as e:
