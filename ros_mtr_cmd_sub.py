@@ -182,47 +182,62 @@ class MotorControl:
         velocity_feedforward: np.array((0, 0, 0, 0, 0, 0)),
         torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
-        for index in range(NO_OF_MOTORS):            
-            try:
-                self.bus.send(can.Message(
-                    arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
-                    data=struct.pack('<fff', position[index], velocity_feedforward[index], torque_feedforward[index]),
-                    is_extended_id=False
-                ))
-            except can.CanError as e:
-                print(f"Failed to send CAN message for motor {index}: {e}")
+
+        mtr_id = 1
+        print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x0C),  # Uses correct motor ID
+            data=struct.pack('<fff', position[0], velocity_feedforward[0], torque_feedforward[0]),
+            is_extended_id=False
+        ))
+        # for index in range(NO_OF_MOTORS):            
+        #     try:
+        #         self.bus.send(can.Message(
+        #             arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
+        #             data=struct.pack('<fff', position[index], velocity_feedforward[index], torque_feedforward[index]),
+        #             is_extended_id=False
+        #         ))
+        #     except can.CanError as e:
+        #         print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
         print("started motor for {mtr_id}")
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x07),
-        #     data=struct.pack('<I', 8),
-        #     is_extended_id=False
-        # ))
 
-        # # Wait for the axis to enter closed-loop control
-        # for msg in self.bus:
-        #     if msg.arbitration_id == (mtr_id << 5 | 0x01):  # 0x01: Heartbeat
-        #         #print(f"got here {msg.arbitration_id}")
-        #         error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
-        #         if state == 8:  # 8: AxisState.CLOSED_LOOP_CONTROL
-        #             #print(f"got here2")
-        #             break
+        if (mtr_id > 3):
+            return
+
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x07),
+            data=struct.pack('<I', 8),
+            is_extended_id=False
+        ))
+
+        # Wait for the axis to enter closed-loop control
+        for msg in self.bus:
+            if msg.arbitration_id == (mtr_id << 5 | 0x01):  # 0x01: Heartbeat
+                #print(f"got here {msg.arbitration_id}")
+                error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
+                if state == 8:  # 8: AxisState.CLOSED_LOOP_CONTROL
+                    #print(f"got here2")
+                    break
                 
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        #     data=struct.pack('<ff', 1.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
-        #     is_extended_id=False
-        # ))
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
+            data=struct.pack('<ff', 1.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
+            is_extended_id=False
+        ))
     
     def stop_motor(selfi,mtr_id):
         print("Stopped motor for {mtr_id}")
 
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x07),
-        #     data=struct.pack('<I', 1), # disable
-        #     is_extended_id=False
-        # ))
+        if (mtr_id > 3):
+            return
+
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x07),
+            data=struct.pack('<I', 1), # disable
+            is_extended_id=False
+        ))
         
 
     def process_positions(self):
@@ -322,10 +337,10 @@ class MotorControl:
 
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
-            #self.send_position(target_pos,target_vel,odrive_torque)
-            print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
-            print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
-            print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()} \nelapsed_time={elapsed_time}")
+            self.send_position(target_pos,target_vel,odrive_torque)
+            # print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
+            # print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
+            # print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()} \nelapsed_time={elapsed_time}")
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
