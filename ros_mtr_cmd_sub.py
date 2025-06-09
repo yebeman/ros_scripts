@@ -185,11 +185,14 @@ class MotorControl:
 
         mtr_id = 1
         print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x0C),  # Uses correct motor ID
-            data=struct.pack('<fff', position[0], velocity_feedforward[0], torque_feedforward[0]),
-            is_extended_id=False
-        ))
+        try:
+            self.bus.send(can.Message(
+                arbitration_id=(mtr_id << 5 | 0x0C),
+                data=struct.pack('<fff', float(position[0]), float(velocity_feedforward[0]), float(torque_feedforward[0])),
+                is_extended_id=False
+            ))
+        except OSError as e:
+            print(f"CAN send failed: {e}")
         # for index in range(NO_OF_MOTORS):            
         #     try:
         #         self.bus.send(can.Message(
