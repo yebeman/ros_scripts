@@ -325,7 +325,7 @@ class MotorControl:
             #self.send_position(target_pos,target_vel,odrive_torque)
             print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
             print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
-            print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()}")
+            print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()} \nelapsed_time={elapsed_time}")
 
             self.prv_pos_nn  = pos_nn
             self.prv_torque  = torque
