@@ -473,7 +473,7 @@ class MotorListener(Node):
 
 
 def main(args=None):
-    bus = None#can.interface.Bus(interface='socketcan', channel='can0', bitrate=1000000)
+    bus = can.interface.Bus(interface='socketcan', channel='can0', bitrate=1000000)
     
     rclpy.init(args=args)
 
