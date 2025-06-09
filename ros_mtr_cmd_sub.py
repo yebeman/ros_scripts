@@ -203,7 +203,7 @@ class MotorControl:
         #         print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
-        print(f"started motor for {mtr_id}")
+        print(f"Starting motor {mtr_id}")
 
         if (mtr_id > 3):
             return
@@ -229,8 +229,8 @@ class MotorControl:
         #     is_extended_id=False
         # ))
     
-    def stop_motor(selfi,mtr_id):
-        print(f"Stopped motor for {mtr_id}")
+    def stop_motor(self,mtr_id):
+        print(f"Stopping motor {mtr_id}")
 
         if (mtr_id > 3):
             return
@@ -240,7 +240,6 @@ class MotorControl:
             data=struct.pack('<I', 1), # disable
             is_extended_id=False
         ))
-        
 
     def process_positions(self):
 
