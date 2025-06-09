@@ -128,6 +128,7 @@ class MotorControl:
 
         self.running = True
         self.motor_state = MOTOR_STATE.STOPPED
+        print("Test 3")
 
         # for id in range(1,4):
         #     self.set_up_motor(id)
@@ -140,7 +141,8 @@ class MotorControl:
         # self.command_thread.start()
         self.process_commands()
 
-        
+        print("Test 4")
+
         #plot
         # self.position_data = deque(maxlen=2000)  # Store last 100 positions
         # self.start_time = None  # Capture start time in milliseconds
@@ -378,6 +380,8 @@ class MotorListener(Node):
         self.pos_nn_q = pos_nn_q
         self.pos_rl_q = pos_rl_q
         self.vel_rl_q = vel_rl_q
+        
+        print("Test 1")
 
         self.state_request_queue = state_request_queue
 
@@ -406,6 +410,8 @@ class MotorListener(Node):
 
         for idx, topic in enumerate(self.motor_current_velocity, start=1):
             self.create_subscription(Float32, topic, lambda msg, m_id=idx: self.current_vel_callback(msg, m_id), 10)
+
+        print("Test 2")
 
         # Subscription for /all_motor/cmd with String commands
         self.create_subscription(String, self.all_motor_cmd_topic, self.all_motor_callback, 3)
@@ -471,11 +477,13 @@ def main(args=None):
     listener_node = MotorListener(pos_nn_q,state_request_queue,pos_rl_q,vel_rl_q)
     listener_thread = threading.Thread(target=rclpy.spin, args=(listener_node,), daemon=True)
     listener_thread.start()
+    print("Test 5")
 
     # motor_control = MotorControl(position_queue, bus)
     # motor_thread = threading.Thread(target=motor_control.run, daemon=True)
     # motor_thread.start()
     motor_control = MotorControl(pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus)
+    print("Test 6")
 
     try:
         listener_thread.join()  # Keep ROS 2 listener running
