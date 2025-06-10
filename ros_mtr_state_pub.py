@@ -68,9 +68,6 @@ class MotorCAN:
         }
         self.data_queue = data_queue  # Shared queue
         self.bus = bus
-        self.prev_positions  = [0,0,0,0,0,0]
-        self.prev_timestamps = [0,0,0,0,0,0]
-        self.origin_time = time.monotonic() #ticks_ms()  
 
     def process_can_message(self, msg):
         """Extract and categorize messages by motor and parameter."""
@@ -91,7 +88,6 @@ class MotorCAN:
             value = _second if motor_param in ["current", "torque"] else _first
 
 
-
         if motor_param == "position":
 
             # apply factor 
@@ -102,21 +98,8 @@ class MotorCAN:
             elif (motor_id == 3 or motor_id == 6):
                 value = value * ABAD_FACTOR - ABAD_OFFSET
 
-            # calculate velocity 
-            # first one should be ignored
-            current_time = time.monotonic() 
-
-            time_diff = current_time - self.prev_timestamps[motor_id]
-            if time_diff > 0:  # Prevent division by zero and negative 
-                velocity = (value - self.prev_positions[motor_id]) / time_diff
-            else:
-                velocity = 0.0
-
-            self.prev_positions[motor_id]  = value
-            self.prev_timestamps[motor_id] = current_time 
-            self.data_queue.put((motor_id, "velocity", velocity))
-            # print(f"{motor_id} = {velocity} every {time.monotonic() - self.origin_time:.6f}")
-            # self.origin_time = time.monotonic() #ticks_ms()
+            # get velocity 
+            self.data_queue.put((motor_id, "velocity", _second))
 
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
