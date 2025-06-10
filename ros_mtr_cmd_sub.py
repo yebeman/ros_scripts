@@ -336,6 +336,9 @@ class MotorControl:
             # assuming target_pos is already limited when send?
             target_pos = ( pos_nn + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
 
+            # odrive takes velocity command rev/second
+            target_vel = target_vel / (2 *np.pi) 
+
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             self.send_position(target_pos,target_vel,odrive_torque)
