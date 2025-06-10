@@ -6,6 +6,7 @@ import threading
 from std_msgs.msg import Float32
 import queue
 import time
+import numpy as np
 
 
 ##############################
@@ -31,6 +32,8 @@ class MotorPublisher(Node):
     def __init__(self, data_queue):
         super().__init__('motor_sate_publisher')
         self.pub_dict = {}  # Dictionary to store publishers dynamically
+        # velocity = [rad/s]
+        # position = [rad]
         self.parameters = ["error", "temperature", "torque", "position", "current", "batt_voltage", "velocity"]
         self.data_queue = data_queue  # Queue for incoming motor data
 
@@ -91,15 +94,17 @@ class MotorCAN:
         if motor_param == "position":
 
             # apply factor 
+            # position - value is in [rad]
             if (motor_id == 1 or motor_id == 4):
                 value = value * KNEE_FACTOR - KNEE_OFFSET
             elif (motor_id == 2 or motor_id == 5):
                 value = value * HIP_FACTOR + HIP_OFFSET
             elif (motor_id == 3 or motor_id == 6):
-                value = value * ABAD_FACTOR - ABAD_OFFSET
+                value = value * ABAD_FACTOR - ABAD_OFFSET  
 
             # get velocity 
-            self.data_queue.put((motor_id, "velocity", _second))
+            velocity = _second * 2 * np.pi # convert rev/s to rad/s
+            self.data_queue.put((motor_id, "velocity", velocity))
 
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
