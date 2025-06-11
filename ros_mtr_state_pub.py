@@ -12,18 +12,18 @@ import numpy as np
 ##############################
 # URDF  <-> Encoder Conversion Factor 
 # knee 
-# -2.7  <--> 2.7  = 5.4 
-# 0.00  <--> 7.06 = 7.06
+# -2.7  <--> 2.7  = 5.4   => s
+# 0.00  <--> 7.06 = 7.06  => r
 KNEE_FACTOR = 5.4/7.06
 KNEE_OFFSET = 2.7
 # Hip
-# -2.2  <--> 2.2    = 4.4
-# 0.00  <--> -5.36  = -5.36
-HIP_FACTOR  = 4.4/5.36
-HIP_OFFSET  = 2.2
+# -2.2  <--> 2.2    = 4.4  => s
+# 0.00  <--> -5.36  = 5.36 => r
+HIP_FACTOR  = -4.4/5.36
+HIP_OFFSET  = -2.2
 # ABAD
-# -0.44  <--> 0.44 = .88
-# -0.68  <--> 0.68 = 1.36
+# -0.44  <--> 0.44 = .88  => s
+# -0.68  <--> 0.68 = 1.36 => r
 ABAD_FACTOR = 0.88/1.36
 ABAD_OFFSET = 0
 ################################
@@ -96,11 +96,11 @@ class MotorCAN:
             # apply factor 
             # position - value is in [rad]
             if (motor_id == 1 or motor_id == 4):
-                value = value * KNEE_FACTOR - KNEE_OFFSET
+                value = value * KNEE_FACTOR + KNEE_OFFSET
             elif (motor_id == 2 or motor_id == 5):
                 value = value * HIP_FACTOR + HIP_OFFSET
             elif (motor_id == 3 or motor_id == 6):
-                value = value * ABAD_FACTOR - ABAD_OFFSET  
+                value = value * ABAD_FACTOR + ABAD_OFFSET  
 
             # get velocity 
             velocity = _second * 2 * np.pi # convert rev/s to rad/s

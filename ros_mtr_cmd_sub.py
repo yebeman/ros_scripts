@@ -20,12 +20,12 @@ import numpy as np
 # -2.7  <--> 2.7  = 5.4 
 # 0.00  <--> 7.06 = 7.06
 KNEE_FACTOR = 7.06/5.4
-KNEE_OFFSET = 2.7
+KNEE_OFFSET = -3.53
 # Hip
 # -2.2  <--> 2.2    = 4.4
 # 0.00  <--> -5.36  = -5.36
-HIP_FACTOR  = 5.36/4.4
-HIP_OFFSET  = 2.2
+HIP_FACTOR  = -5.36/4.4
+HIP_OFFSET  = -2.68
 # ABAD
 # -0.44  <--> 0.44 = .88
 # -0.68  <--> 0.68 = 1.36
@@ -34,7 +34,7 @@ ABAD_OFFSET = 0
 
 # position conversion 
 URDF_TO_REAL_POS_FACTOR = (KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
-URDF_TO_REAL_POS_OFFSET = (KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET)
+URDF_TO_REAL_POS_OFFSET = (KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
@@ -152,7 +152,7 @@ class MotorControl:
         torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
         #mtr_id = 1
-        #print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
+        print(f"position={position.tolist()}")
         # try:
         #     self.bus.send(can.Message(
         #         arbitration_id=(mtr_id << 5 | 0x0C),
