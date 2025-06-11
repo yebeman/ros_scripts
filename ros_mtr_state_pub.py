@@ -12,20 +12,26 @@ import numpy as np
 ##############################
 # URDF  <-> Encoder Conversion Factor 
 # knee 
-# -2.7  <--> 2.7  = 5.4   => s
+# -2.7  <--> 2.7  = 5.4   => sr
+# 2.7   <--> -2.7 = 5.4   => sl
 # 0.00  <--> 7.06 = 7.06  => r
-KNEE_FACTOR = 5.4/7.06
-KNEE_OFFSET = 2.7
+KNEE_FACTOR = 5.4/7.06 # for sr. for sl *-1
+KNEE_OFFSET = -2.7     # for sr and sl * -1 
 # Hip
-# -2.2  <--> 2.2    = 4.4  => s
+# -2.3  <--> 2.3    = 4.6  => sr
+# 2.3   <--> -2.3   = 4.6  => sl
 # 0.00  <--> -5.36  = 5.36 => r
-HIP_FACTOR  = -4.4/5.36
-HIP_OFFSET  = -2.2
+HIP_FACTOR  = -4.6/5.36  # for sr, for sl *-1
+HIP_OFFSET  = -2.3       # for sr, for sl *-1
 # ABAD
-# -0.44  <--> 0.44 = .88  => s
-# -0.68  <--> 0.68 = 1.36 => r
-ABAD_FACTOR = 0.88/1.36
+# -0.44  <--> 0.44  = .88  => sr
+# 0.44   <--> -0.44 = .88  => sl
+# -0.68  <--> 0.68  = 1.36 => r
+ABAD_FACTOR = 0.88/1.36 # for sr, for sl *-1
 ABAD_OFFSET = 0
+
+REAL_TO_URDF_POS_FACTOR = (-1*KNEE_FACTOR,-1*HIP_FACTOR,-1*ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
+REAL_TO_URDF_POS_OFFSET = (-1*KNEE_OFFSET,-1*HIP_OFFSET,-1*ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
 ################################
 
 class MotorPublisher(Node):
@@ -95,12 +101,7 @@ class MotorCAN:
 
             # apply factor 
             # position - value is in [rad]
-            if (motor_id == 1 or motor_id == 4):
-                value = value * KNEE_FACTOR + KNEE_OFFSET
-            elif (motor_id == 2 or motor_id == 5):
-                value = value * HIP_FACTOR + HIP_OFFSET
-            elif (motor_id == 3 or motor_id == 6):
-                value = value * ABAD_FACTOR + ABAD_OFFSET  
+            value = value * ABAD_FACTOR[motor_id-1] + ABAD_OFFSET[motor_id-1] 
 
             # get velocity 
             velocity = _second * 2 * np.pi # convert rev/s to rad/s

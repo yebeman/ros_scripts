@@ -17,24 +17,27 @@ import numpy as np
 ##############################
 # URDF  <-> Encoder Conversion Factor 
 # knee 
-# -2.7  <--> 2.7  = 5.4 
-# 0.00  <--> 7.06 = 7.06
+# -2.7  <--> 2.7  = 5.4   => sr
+# 2.7   <--> -2.7 = 5.4   => sl
+# 0.00  <--> 7.06 = 7.06  => r
 KNEE_FACTOR = 7.06/5.4
-KNEE_OFFSET = -3.53
+KNEE_OFFSET = 3.53
 # Hip
-# -2.2  <--> 2.2    = 4.4
-# 0.00  <--> -5.36  = -5.36
+# -2.3  <--> 2.3    = 4.6  => sr
+# 2.3   <--> -2.3   = 4.6  => sl
+# 0.00  <--> -5.36  = 5.36 => r
 HIP_FACTOR  = -5.36/4.4
-HIP_OFFSET  = -2.68
+HIP_OFFSET  = -2.8
 # ABAD
-# -0.44  <--> 0.44 = .88
-# -0.68  <--> 0.68 = 1.36
+# -0.44  <--> 0.44  = .88  => sr
+# 0.44   <--> -0.44 = .88  => sl
+# -0.68  <--> 0.68  = 1.36 => r
 ABAD_FACTOR = 1.36/0.88
 ABAD_OFFSET = 0
 
 # position conversion 
-URDF_TO_REAL_POS_FACTOR = (KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
-URDF_TO_REAL_POS_OFFSET = (KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
+URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,-1*ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
+URDF_TO_REAL_POS_OFFSET =  (-1*KNEE_OFFSET,-1*HIP_OFFSET,-1*ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
