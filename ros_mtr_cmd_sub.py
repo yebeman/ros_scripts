@@ -36,7 +36,7 @@ ABAD_OFFSET = 0
 URDF_TO_REAL_POS_FACTOR = (KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
 URDF_TO_REAL_POS_OFFSET = (KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET)
 # number of motots
-NO_OF_MOTORS = 6
+NO_OF_MOTORS = 3
 ################################
 
 ################################
@@ -129,52 +129,21 @@ class MotorControl:
         self.running = True
         self.motor_state = MOTOR_STATE.STOPPED
 
-        # for id in range(1,4):
-        #     self.set_up_motor(id)
-
-        # Start both threads within the class
-        # self.motor_thread   = threading.Thread(target=self.process_positions, daemon=True)
-        # self.command_thread = threading.Thread(target=self.process_commands, daemon=True)
-
-        # self.motor_thread.start()
         # self.command_thread.start()
         self.process_commands()
 
-        
-        #plot
-        # self.position_data = deque(maxlen=2000)  # Store last 100 positions
-        # self.start_time = None  # Capture start time in milliseconds
-        # self.time_interval = 100  # Time interval (e.g., 100 ms per update)
-        # self.fig, self.ax = plt.subplots()
-        # self.line, = self.ax.plot([], [], 'bo-', label="Motor Position")
+    def send_torque(self, torque_feedforward: np.array((0, 0, 0, 0, 0, 0))):
 
-        # self.ax.set_xlabel("Time (ms)")
-        # self.ax.set_ylabel("Position")
-        # self.ax.set_title("Real-Time Knee Motor Position")
-        # self.ax.legend()
-        # self.ax.grid(True)
-        # #plt.ion() 
-        # plt.show()
-
-        #print(f"Motor Active")
-
-    # def send_position(self, id, position):
-    #     print(f"{id}:{position}")
-    #     self.bus.send(can.Message(
-    #         arbitration_id=(id << 5 | 0x0c),  # 0x0c: Set_Input_Pos
-    #         data=struct.pack('<f', position),
-    #         is_extended_id=False
-    #     ))
-
-    # def send_torque(self, motors_torque):
-
-    #     for index,torque in enumerate(motors_torque) :  
-    #         print(f" sent torque = {index}:{torque}")      
-    #         bus.send(can.Message(
-    #             arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-    #             data=struct.pack('<f', torque),
-    #             is_extended_id=False
-    #         ))
+        try:
+            for index,torque in enumerate(motors_torque) :  
+                print(f" sent torque = {index}:{torque}")      
+                bus.send(can.Message(
+                    arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
+                    data=struct.pack('<f', torque),
+                    is_extended_id=False
+                ))
+        except OSError as e:
+            print(f"CAN send failed: {e}")
 
     def send_position(
         self,
@@ -182,25 +151,25 @@ class MotorControl:
         velocity_feedforward: np.array((0, 0, 0, 0, 0, 0)),
         torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
-        mtr_id = 1
-        print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
-        try:
-            self.bus.send(can.Message(
-                arbitration_id=(mtr_id << 5 | 0x0C),
-                data=struct.pack('<fhh', position[0], int(velocity_feedforward[0] * 1000), int(torque_feedforward[0] * 1000)),
-                is_extended_id=False
-            ))
-        except OSError as e:
-            print(f"CAN send failed: {e}")
-        # for index in range(NO_OF_MOTORS):            
-        #     try:
-        #         self.bus.send(can.Message(
-        #             arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
-        #             data=struct.pack('<fff', position[index], velocity_feedforward[index], torque_feedforward[index]),
-        #             is_extended_id=False
-        #         ))
-        #     except can.CanError as e:
-        #         print(f"Failed to send CAN message for motor {index}: {e}")
+        #mtr_id = 1
+        #print(f"position[0]={position[0]}, velocity_feedforward[0] = {velocity_feedforward[0]}, torque_feedforward[0]={torque_feedforward[0]}")
+        # try:
+        #     self.bus.send(can.Message(
+        #         arbitration_id=(mtr_id << 5 | 0x0C),
+        #         data=struct.pack('<fhh', position[0], int(velocity_feedforward[0] * 1000), int(torque_feedforward[0] * 1000)),
+        #         is_extended_id=False
+        #     ))
+        # except OSError as e:
+        #     print(f"CAN send failed: {e}")
+        for index in range(NO_OF_MOTORS):            
+            try:
+                self.bus.send(can.Message(
+                    arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
+                    data=struct.pack('<fff', position[index], velocity_feedforward[index], torque_feedforward[index]),
+                    is_extended_id=False
+                ))
+            except can.CanError as e:
+                print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
@@ -214,21 +183,6 @@ class MotorControl:
             is_extended_id=False
         ))
 
-        # # Wait for the axis to enter closed-loop control
-        # for msg in self.bus:
-        #     if msg.arbitration_id == (mtr_id << 5 | 0x01):  # 0x01: Heartbeat
-        #         #print(f"got here {msg.arbitration_id}")
-        #         error, state, result, traj_done = struct.unpack('<IBBB', bytes(msg.data[:7]))
-        #         if state == 8:  # 8: AxisState.CLOSED_LOOP_CONTROL
-        #             #print(f"got here2")
-        #             break
-                
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x0d), # 0x0d: Set_Input_Vel
-        #     data=struct.pack('<ff', 1.0, 0.0), # 1.0: velocity, 0.0: torque feedforward
-        #     is_extended_id=False
-        # ))
-    
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
@@ -268,7 +222,7 @@ class MotorControl:
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable         
-            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6
+            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6 , [rad]
 
             if pos_nn is None:
                 continue
@@ -279,8 +233,8 @@ class MotorControl:
                 continue
 
             # get current position and vel          
-            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
-            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit
+            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad]
+            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad/s]
 
             if cur_pos is None or cur_pos is None:
                 print(f"Error - cur_pos or cur_pos should have something ")
@@ -336,7 +290,7 @@ class MotorControl:
             # assuming target_pos is already limited when send?
             target_pos = ( pos_nn + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
 
-            # odrive takes velocity command rev/second
+            # odrive takes velocity command rev/s
             target_vel = target_vel / (2 *np.pi) 
 
             # translate to the odrive torque and send
@@ -372,20 +326,6 @@ class MotorControl:
         self.running = False
         self.motor_thread.join()
         self.command_thread.join()
-
-    # def update_plot(self):
-    #     """Updates the live plot using real-time elapsed time."""
-    #     if len(self.position_data) > 0:  # Ensure we have data
-    #         time_values, position_values = zip(*self.position_data)  # Separate time & position
-
-    #         self.line.set_data(time_values, position_values)
-
-    #         self.ax.relim()
-    #         self.ax.autoscale_view()
-    #         self.ax.set_xlim(max(0, time_values[-1] - 5000), time_values[-1] + 1000)  # Show last 5 sec
-
-    #         plt.draw()
-    #         self.fig.canvas.flush_events()  # Force redraw
 
 
 class MotorListener(Node):
@@ -436,11 +376,11 @@ class MotorListener(Node):
         self.pos_nn_q.save_to_queue(motor_id, msg.data)
 
         #for now Zero everything else
-        self.pos_nn_q.save_to_queue(2, 0.0)
-        self.pos_nn_q.save_to_queue(3, 0.0)
-        self.pos_nn_q.save_to_queue(4, 0.0)
-        self.pos_nn_q.save_to_queue(5, 0.0)
-        self.pos_nn_q.save_to_queue(6, 0.0)
+        # do it only once
+        if motor_id == 1:   
+            self.pos_nn_q.save_to_queue(4, 0.0)
+            self.pos_nn_q.save_to_queue(5, 0.0)
+            self.pos_nn_q.save_to_queue(6, 0.0)
 
     def current_pos_callback(self, msg, motor_id):
         self.pos_rl_q.save_to_queue(motor_id, msg.data)
@@ -468,13 +408,6 @@ class MotorListener(Node):
         command = msg.data.strip().lower()  # Normalize command input
         self.state_request_queue.put(command)
 
-        # debugging
-        # if command in ["start", "stop"]:
-        #     print(f"Received command for all motors: {command}")
-        # else:
-        #     print(f"Invalid command: {command}")
-
-
 
 def main(args=None):
     bus = can.interface.Bus(interface='socketcan', channel='can0', bitrate=1000000)
@@ -491,9 +424,6 @@ def main(args=None):
     listener_thread = threading.Thread(target=rclpy.spin, args=(listener_node,), daemon=True)
     listener_thread.start()
 
-    # motor_control = MotorControl(position_queue, bus)
-    # motor_thread = threading.Thread(target=motor_control.run, daemon=True)
-    # motor_thread.start()
     motor_control = MotorControl(pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus)
 
     try:
