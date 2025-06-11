@@ -101,7 +101,7 @@ class MotorCAN:
 
             # apply factor 
             # position - value is in [rad]
-            value = value * ABAD_FACTOR[motor_id-1] + ABAD_OFFSET[motor_id-1] 
+            value = value * REAL_TO_URDF_POS_FACTOR[motor_id-1] + REAL_TO_URDF_POS_OFFSET[motor_id-1] 
 
             # get velocity 
             velocity = _second * 2 * np.pi # convert rev/s to rad/s
