@@ -37,7 +37,7 @@ ABAD_OFFSET = 0
 
 # position conversion 
 URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
-URDF_TO_REAL_POS_OFFSET =  (-1*KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
+URDF_TO_REAL_POS_OFFSET =  (   KNEE_OFFSET,   HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
@@ -137,16 +137,16 @@ class MotorControl:
 
     def send_torque(self, torque_feedforward: np.array((0, 0, 0, 0, 0, 0))):
 
-        # try:
-        #     for index,torque in enumerate(motors_torque) :  
-        #         print(f" sent torque = {index}:{torque}")      
-        #         bus.send(can.Message(
-        #             arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-        #             data=struct.pack('<f', torque),
-        #             is_extended_id=False
-        #         ))
-        # except OSError as e:
-        #     print(f"CAN send failed: {e}")
+        try:
+            for index,torque in enumerate(motors_torque) :  
+                print(f" sent torque = {index}:{torque}")      
+                bus.send(can.Message(
+                    arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
+                    data=struct.pack('<f', torque),
+                    is_extended_id=False
+                ))
+        except OSError as e:
+            print(f"CAN send failed: {e}")
 
     def send_position(
         self,
