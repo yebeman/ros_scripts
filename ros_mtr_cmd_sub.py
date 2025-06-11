@@ -36,8 +36,8 @@ ABAD_FACTOR = 1.36/0.88
 ABAD_OFFSET = 0
 
 # position conversion 
-URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,-1*ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
-URDF_TO_REAL_POS_OFFSET =  (-1*KNEE_OFFSET,-1*HIP_OFFSET,-1*ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
+URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
+URDF_TO_REAL_POS_OFFSET =  (-1*KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
@@ -137,16 +137,16 @@ class MotorControl:
 
     def send_torque(self, torque_feedforward: np.array((0, 0, 0, 0, 0, 0))):
 
-        try:
-            for index,torque in enumerate(motors_torque) :  
-                print(f" sent torque = {index}:{torque}")      
-                bus.send(can.Message(
-                    arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-                    data=struct.pack('<f', torque),
-                    is_extended_id=False
-                ))
-        except OSError as e:
-            print(f"CAN send failed: {e}")
+        # try:
+        #     for index,torque in enumerate(motors_torque) :  
+        #         print(f" sent torque = {index}:{torque}")      
+        #         bus.send(can.Message(
+        #             arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
+        #             data=struct.pack('<f', torque),
+        #             is_extended_id=False
+        #         ))
+        # except OSError as e:
+        #     print(f"CAN send failed: {e}")
 
     def send_position(
         self,
@@ -164,15 +164,15 @@ class MotorControl:
         #     ))
         # except OSError as e:
         #     print(f"CAN send failed: {e}")
-        for index in range(NO_OF_MOTORS):            
-            try:
-                self.bus.send(can.Message(
-                    arbitration_id=((index+1) << 5 | 0x0C),  # Uses correct motor ID
-                    data=struct.pack('<fhh', position[index], int(velocity_feedforward[index] * 1000), int(torque_feedforward[index] * 1000)),
-                    is_extended_id=False
-                ))
-            except can.CanError as e:
-                print(f"Failed to send CAN message for motor {index}: {e}")
+        # for index in range(NO_OF_MOTORS):            
+        #     try:
+        #         self.bus.send(can.Message(
+        #             arbitration_id=((index+1) << 5 | 0x0C),  # Uses correct motor ID
+        #             data=struct.pack('<fhh', position[index], int(velocity_feedforward[index] * 1000), int(torque_feedforward[index] * 1000)),
+        #             is_extended_id=False
+        #         ))
+        #     except can.CanError as e:
+        #         print(f"Failed to send CAN message for motor {index}: {e}")
 
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
@@ -180,23 +180,23 @@ class MotorControl:
         if (mtr_id > 3):
             return
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 8),
-            is_extended_id=False
-        ))
+        # self.bus.send(can.Message(
+        #     arbitration_id=(mtr_id << 5 | 0x07),
+        #     data=struct.pack('<I', 8),
+        #     is_extended_id=False
+        # ))
 
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        if (mtr_id > 3):
-            return
+        # if (mtr_id > 3):
+        #     return
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 1), # disable
-            is_extended_id=False
-        ))
+        # self.bus.send(can.Message(
+        #     arbitration_id=(mtr_id << 5 | 0x07),
+        #     data=struct.pack('<I', 1), # disable
+        #     is_extended_id=False
+        # ))
 
     def process_positions(self):
 
@@ -291,7 +291,10 @@ class MotorControl:
             #     print(f"Motor_{motor_id} position {position} too large")
             #     continue;
             # assuming target_pos is already limited when send?
-            target_pos = ( pos_nn + URDF_TO_REAL_POS_OFFSET ) * URDF_TO_REAL_POS_FACTOR
+            print(f"pos_nn = {pos_nn.tolist()}")
+            target_pos =  URDF_TO_REAL_POS_FACTOR * pos_nn + URDF_TO_REAL_POS_OFFSET
+            print(f"target_pos = {target_pos.tolist()}")
+            #print(f"cur_pos = {cur_pos.tolist()}")
 
             # odrive takes velocity command rev/s
             target_vel = target_vel / (2 *np.pi) 

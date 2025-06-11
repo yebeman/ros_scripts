@@ -27,11 +27,11 @@ HIP_OFFSET  = -2.3       # for sr, for sl *-1
 # -0.44  <--> 0.44  = .88  => sr
 # 0.44   <--> -0.44 = .88  => sl
 # -0.68  <--> 0.68  = 1.36 => r
-ABAD_FACTOR = 0.88/1.36 # for sr, for sl *-1
+ABAD_FACTOR = 0.88/1.36 # for sl, for sr *-1
 ABAD_OFFSET = 0
 
-REAL_TO_URDF_POS_FACTOR = (-1*KNEE_FACTOR,-1*HIP_FACTOR,-1*ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,ABAD_FACTOR)
-REAL_TO_URDF_POS_OFFSET = (-1*KNEE_OFFSET,-1*HIP_OFFSET,-1*ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
+REAL_TO_URDF_POS_FACTOR = (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
+REAL_TO_URDF_POS_OFFSET = (-1*KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
 ################################
 
 class MotorPublisher(Node):
@@ -101,7 +101,7 @@ class MotorCAN:
 
             # apply factor 
             # position - value is in [rad]
-            value = value * REAL_TO_URDF_POS_FACTOR[motor_id-1] + REAL_TO_URDF_POS_OFFSET[motor_id-1] 
+            value =  REAL_TO_URDF_POS_FACTOR[motor_id-1] * value + REAL_TO_URDF_POS_OFFSET[motor_id-1] 
 
             # get velocity 
             velocity = _second * 2 * np.pi # convert rev/s to rad/s
