@@ -164,7 +164,7 @@ class MotorControl:
         for index in range(NO_OF_MOTORS):            
             try:
                 self.bus.send(can.Message(
-                    arbitration_id=(index << 5 | 0x0C),  # Uses correct motor ID
+                    arbitration_id=((index+1) << 5 | 0x0C),  # Uses correct motor ID
                     data=struct.pack('<fhh', position[index], int(velocity_feedforward[index] * 1000), int(torque_feedforward[index] * 1000)),
                     is_extended_id=False
                 ))
