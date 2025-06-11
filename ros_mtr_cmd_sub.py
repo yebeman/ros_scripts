@@ -239,7 +239,7 @@ class MotorControl:
             cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad]
             cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad/s]
 
-            if cur_pos is None or cur_pos is None:
+            if cur_pos is None or cur_vel is None:
                 print(f"Error - cur_pos or cur_pos should have something ")
                 continue
 
