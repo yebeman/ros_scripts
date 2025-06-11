@@ -107,6 +107,8 @@ class MotorCAN:
             velocity = _second * 2 * np.pi # convert rev/s to rad/s
             self.data_queue.put((motor_id, "velocity", velocity))
 
+            #print(f"m{motor_id}::f{_first}::v::{value}")
+
         # Add to queue
         self.data_queue.put((motor_id, motor_param, value)) 
 
