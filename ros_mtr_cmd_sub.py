@@ -75,7 +75,7 @@ class MOTOR_STATE (Enum):
 
 class motor_queue:
 
-    def __init__(self, maxsize: int = 10):
+    def __init__(self, maxsize: int = 1):
         self.motor_1  = queue.Queue(maxsize=maxsize)
         self.motor_2  = queue.Queue(maxsize=maxsize)
         self.motor_3  = queue.Queue(maxsize=maxsize)
@@ -88,7 +88,7 @@ class motor_queue:
             queue_attr = getattr(self, f"motor_{motor_id}")
             
             if queue_attr.full():
-                self.clear_queues()  # Clear all queue for sync data
+                return #self.clear_queues() 
 
             queue_attr.put(data)  # Add the new item
         except AttributeError:
@@ -240,7 +240,7 @@ class MotorControl:
             cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad/s]
 
             if cur_pos is None or cur_vel is None:
-                print(f"Error - cur_pos or cur_pos should have something ")
+                print(f"Error - cur_pos or cur_vel should have something ")
                 continue
 
             # calculate pos error
