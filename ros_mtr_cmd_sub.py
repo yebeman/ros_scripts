@@ -155,7 +155,7 @@ class MotorControl:
         torque_feedforward: np.array((0, 0, 0, 0, 0, 0))
     ):
         #mtr_id = 1
-        print(f"position={position.tolist()}")
+        print(f"position={position.tolist()}, \nvelocity_feedforward={velocity_feedforward.tolist()}, \ntorque_feedforward={torque_feedforward.tolist()}")
         # try:
         #     self.bus.send(can.Message(
         #         arbitration_id=(mtr_id << 5 | 0x0C),
@@ -164,39 +164,39 @@ class MotorControl:
         #     ))
         # except OSError as e:
         #     print(f"CAN send failed: {e}")
-        for index in range(NO_OF_MOTORS):            
-            try:
-                self.bus.send(can.Message(
-                    arbitration_id=((index+1) << 5 | 0x0C),
-                    data=struct.pack('<fhh', position[index], int(velocity_feedforward[index] * 1000), int(torque_feedforward[index] * 1000)),
-                    is_extended_id=False
-                ))
-            except can.CanError as e:
-                print(f"Failed to send CAN message for motor {index + 1}: {e}")
+        # for index in range(NO_OF_MOTORS):            
+        #     try:
+        #         self.bus.send(can.Message(
+        #             arbitration_id=((index+1) << 5 | 0x0C),
+        #             data=struct.pack('<fhh', position[index], int(velocity_feedforward[index] * 1000), int(torque_feedforward[index] * 1000)),
+        #             is_extended_id=False
+        #         ))
+        #     except can.CanError as e:
+        #         print(f"Failed to send CAN message for motor {index + 1}: {e}")
 
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        if (mtr_id > 3):
-            return
+        # if (mtr_id > 3):
+        #     return
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 8),
-            is_extended_id=False
-        ))
+        # self.bus.send(can.Message(
+        #     arbitration_id=(mtr_id << 5 | 0x07),
+        #     data=struct.pack('<I', 8),
+        #     is_extended_id=False
+        # ))
 
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        if (mtr_id > 3):
-            return
+        # if (mtr_id > 3):
+        #     return
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 1), # disable
-            is_extended_id=False
-        ))
+        # self.bus.send(can.Message(
+        #     arbitration_id=(mtr_id << 5 | 0x07),
+        #     data=struct.pack('<I', 1), # disable
+        #     is_extended_id=False
+        # ))
 
     def process_positions(self):
 
