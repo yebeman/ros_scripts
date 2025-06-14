@@ -97,6 +97,7 @@ class MotorCAN:
             value = _second if motor_param in ["current", "torque"] else _first
 
 
+        # position also includes velocity 
         if motor_param == "position":
 
             # apply factor 

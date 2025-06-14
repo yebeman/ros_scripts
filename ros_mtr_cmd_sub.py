@@ -100,14 +100,21 @@ class motor_queue:
 
         while self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
 
-           if time.monotonic() - start_time > 0.1: 
-                #print("Timeout reached, exiting loop.")   
+            if time.monotonic() - start_time > 0.1: 
+
                 return None  
-            #pass  # Busy-waiting until all queues have data
 
         return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
                          self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
 
+    def is_filled(self):
+
+        # check if all is filled - sync all motors
+        if self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
+            return None  
+
+        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
+                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
@@ -127,6 +134,8 @@ class MotorControl:
         self.vel_rl_q = vel_rl_q
 
         self.prv_pos_nn  = (0,0,0,0,0,0)
+        self.prv_cur_pos = (0,0,0,0,0,0)
+        self.prv_cur_vel = (0,0,0,0,0,0)
         self.prv_torque  = (0,0,0,0,0,0)
 
         self.running = True
@@ -201,8 +210,11 @@ class MotorControl:
     def process_positions(self):
 
         print("Processing positions ...")
-        cmd_sample_time = time.monotonic()
+        #cmd_sample_time = time.monotonic()
 
+        # max pid odrive update frequency apparently  runs at 8KHz ~ 0.125ms position/velocity/current control loops
+        # starting with 5ms update frequ
+        cmd_request_period = time.monotonic()
         while self.running:
 
             if not self.state_request_queue.empty():
@@ -220,40 +232,45 @@ class MotorControl:
                     print("command not recognized")
 
 
+
+            # motor needs to be started
+            if self.motor_state == MOTOR_STATE.STOPPED:
+                print(f"Motors havn't been initialied yet")
+                break
+
             # note = 
             # pos_nn_q should be slower than both pos_rl_q and vel_rl_q
 
             # are all motor queue filled?
             # then extract all of them and save in to a variable         
-            pos_nn = self.pos_nn_q.wait_until_filled() # only has 1 queue size; NN size limit ; motor 1 - 6 , [rad]
-
+            # if queue has data (without wait), take, else use previous data  and recalculate 
+            pos_nn = self.pos_nn_q.is_filled() # only has 1 queue size; NN size limit ; motor 1 - 6 , [rad]
             if pos_nn is None:
-                continue
+                pos_nn = self.prv_pos_nn
 
-            # motor needs to be started
-            if self.motor_state == MOTOR_STATE.STOPPED:
-                print(f"Motors havn't been initialied yet")
-                continue
+            # get current position and vel  
+            # if queue has data (without wait), take, else use previous data  and recalculate 
+            cur_pos = self.pos_rl_q.is_filled() # only has 1 queue size  ; NN size limit  , [rad]
+            if cur_pos is None:
+                cur_pos = self.prv_cur_pos
 
-            # get current position and vel          
-            cur_pos = self.pos_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad]
-            cur_vel = self.vel_rl_q.wait_until_filled() # only has 1 queue size  ; NN size limit  , [rad/s]
-
-            if cur_pos is None or cur_vel is None:
-                print(f"Error - cur_pos or cur_vel should have something ")
-                continue
+            # if queue has data (without wait), take, else use previous data and recalculate 
+            cur_vel = self.vel_rl_q.is_filled() # only has 1 queue size  ; NN size limit  , [rad/s]
+            if cur_vel is None:
+                cur_vel = self.prv_cur_vel
 
             # calculate pos error
             pos_error = pos_nn - cur_pos
 
             # calculate vel error
             # calculate nn velocity 
-            elapsed_time = time.monotonic() - cmd_sample_time
-            elapsed_time = np.where(elapsed_time <= 0, 1, elapsed_time)
-            target_vel = ( pos_nn - self.prv_pos_nn ) / elapsed_time
-            cmd_sample_time = time.monotonic()
+            # elapsed_time = time.monotonic() - cmd_sample_time
+            # elapsed_time = np.where(elapsed_time <= 0, 1, elapsed_time)
+            # target_vel = ( pos_nn - self.prv_pos_nn ) / elapsed_time
+            # cmd_sample_time = time.monotonic()
 
-            target_vel = np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
+            # np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
+            target_vel = 0 # isaacsim has this to be 0
             vel_error  = target_vel - cur_vel
 
             # then calculate torque            
@@ -307,7 +324,15 @@ class MotorControl:
             # print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()} \nelapsed_time={elapsed_time}")
 
             self.prv_pos_nn  = pos_nn
+            self.prv_cur_vel = cur_vel
+            self.prv_cur_pos = cur_pos
             self.prv_torque  = torque
+
+            # update at 5ms frequency 
+            cmd_elapsed_period = 0.005 - (time.monotonic() - cmd_request_period) # should take 5ms 
+            if (cmd_elapsed_period > 0) : 
+                time.sleep(cmd_elapsed_period)
+            cmd_request_period = time.monotonic()
         
         # if its still running 
         if self.running:
@@ -384,6 +409,8 @@ class MotorListener(Node):
         #for now Zero everything else
         # do it only once
         if motor_id == 1:   
+            self.pos_nn_q.save_to_queue(2, 0.0)
+            self.pos_nn_q.save_to_queue(3, 0.0)
             self.pos_nn_q.save_to_queue(4, 0.0)
             self.pos_nn_q.save_to_queue(5, 0.0)
             self.pos_nn_q.save_to_queue(6, 0.0)
@@ -394,6 +421,8 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 1:   
+            self.pos_rl_q.save_to_queue(2, 0.0)
+            self.pos_rl_q.save_to_queue(3, 0.0)
             self.pos_rl_q.save_to_queue(4, 0.0)
             self.pos_rl_q.save_to_queue(5, 0.0)
             self.pos_rl_q.save_to_queue(6, 0.0)
@@ -404,6 +433,8 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 1:   
+            self.vel_rl_q.save_to_queue(2, 0.0)
+            self.vel_rl_q.save_to_queue(3, 0.0)
             self.vel_rl_q.save_to_queue(4, 0.0)
             self.vel_rl_q.save_to_queue(5, 0.0)
             self.vel_rl_q.save_to_queue(6, 0.0)
