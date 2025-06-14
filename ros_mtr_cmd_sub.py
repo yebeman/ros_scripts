@@ -104,8 +104,8 @@ class motor_queue:
 
                 return None  
 
-        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
-                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
+        return np.array((self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
+                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()))
 
     def is_filled(self):
 
@@ -113,8 +113,8 @@ class motor_queue:
         if self.motor_1.empty() or self.motor_2.empty() or self.motor_3.empty() or self.motor_4.empty() or self.motor_5.empty() or self.motor_6.empty():
             return None  
 
-        return np.array([self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
-                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()])
+        return np.array((self.motor_1.get(), self.motor_2.get(), self.motor_3.get(), 
+                         self.motor_4.get(), self.motor_5.get(), self.motor_6.get()))
 
     def clear_queues(self):
         for motor_queue in [self.motor_1, self.motor_2, self.motor_3,
@@ -133,10 +133,10 @@ class MotorControl:
         self.pos_rl_q = pos_rl_q
         self.vel_rl_q = vel_rl_q
 
-        self.prv_pos_nn  = np.array([(0,0,0,0,0,0)])
-        self.prv_cur_pos = np.array([(0,0,0,0,0,0)])
-        self.prv_cur_vel = np.array([(0,0,0,0,0,0)])
-        self.prv_torque  = np.array([(0,0,0,0,0,0)])
+        self.prv_pos_nn  = np.array((0, 0, 0, 0, 0, 0))
+        self.prv_cur_pos = np.array((0, 0, 0, 0, 0, 0))
+        self.prv_cur_vel = np.array((0, 0, 0, 0, 0, 0))
+        self.prv_torque  = np.array((0, 0, 0, 0, 0, 0))
 
         self.running = True
         self.motor_state = MOTOR_STATE.STOPPED
