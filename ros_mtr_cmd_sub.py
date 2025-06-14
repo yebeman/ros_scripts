@@ -298,7 +298,7 @@ class MotorControl:
             force_at_24 = np.abs(torque) / FIXED_LINKS_LENGTH
             force_at_link = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * force_at_24
             odrive_torque = ( force_at_link + 71.897 ) / 7468.5
-            odrive_torque = odrive_torque * (torque/np.abs(torque))
+            odrive_torque = odrive_torque * (torque/np.where(torque == 0,1,np.abs(torque)))
 
             # apply cliping to get max torque
             #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
