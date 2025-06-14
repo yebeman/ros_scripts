@@ -149,21 +149,24 @@ class MotorControl:
 
         print(f"motors_torque={motors_torque.tolist()}")
 
+        torque_packer = struct.Struct('<f')
+
+        # Precompute base arbitration IDs
+        arb_base = 0x0e
+        arb_ids = [((i + 1) << 5) | arb_base for i in range(3)]  # Only motors 0,1,2
+
+
         try:
-            for index,torque in enumerate(motors_torque) :  
-
-                if index > 2:
-                    continue
-
-                print(f" sent torque = {(index+1)}:{torque}") 
-                self.bus.send(can.Message(
-                    arbitration_id=((index+1) << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-                    data=struct.pack('<f', torque),
-                    is_extended_id=False
-                ))
+            for index, torque in enumerate(motors_torque[:3]):  # Skip indices > 2 directly
+                print(f" sent torque = {index + 1}:{torque}")
+        
+                data = torque_packer.pack(torque)
+                msg = can.Message(arbitration_id=arb_ids[index], data=data, is_extended_id=False)
+                self.bus.send(msg)
+        
         except OSError as e:
             print(f"CAN send failed: {e}")
-
+        
     def send_position(
         self,
         position: np.array((0, 0, 0, 0, 0, 0)),
