@@ -296,10 +296,9 @@ class MotorControl:
             # F1 = 7468.5*Torque_real - 71.897
             # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
             #force_at_24 = np.abs(torque) / FIXED_LINKS_LENGTH
-            _torque = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * np.abs(torque) # take -ve 
-            _torque_in_gram = _torque * 1000 # kg to gram
-            odrive_torque_in_gram = ( _torque_in_gram + 71.897 ) / 7468.5
-            odrive_torque = odrive_torque_in_gram / 1000 # gram to kg
+            _torque_at_distance = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * np.abs(torque) # take -ve 
+            _torque_in_gram = _torque_at_distance * 1000 # kg to gram
+            odrive_torque = ( _torque_in_gram + 71.897 ) / 7468.5 # gives torque in NM
 
             odrive_torque = odrive_torque * (torque/np.where(torque == 0,1,np.abs(torque))) # apply the -ve back
 
