@@ -38,6 +38,7 @@ ABAD_OFFSET = 0
 # position conversion 
 URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
 URDF_TO_REAL_POS_OFFSET =  (   KNEE_OFFSET,   HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
+URDF_TO_REAL_TORQUE     =  (-1,-1,1,1,1,-1)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
@@ -295,12 +296,13 @@ class MotorControl:
             # rlp of motor and torque at 0.24m 
             # F1 = 7468.5*Torque_real - 71.897
             # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
-            #force_at_24 = np.abs(torque) / FIXED_LINKS_LENGTH
-            _torque_at_distance = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * np.abs(torque) # take -ve 
-            _torque_in_gram = _torque_at_distance * 1000 # kg to gram
-            odrive_torque = ( _torque_in_gram + 71.897 ) / 7468.5 # gives torque in NM
-
+            #_torque_in_gram = _torque_at_distance * 1000 # kg to gram
+            force_at_24    = torque / FIXED_LINKS_LENGTH
+            force_at_link = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * np.abs(force_at_24) # take -ve 
+            force_at_link_in_gram = force_at_link * 1000
+            odrive_torque = ( force_at_link_in_gram + 71.897 ) / 7468.5 # gives torque in NM
             odrive_torque = odrive_torque * (torque/np.where(torque == 0,1,np.abs(torque))) # apply the -ve back
+            odrive_torque = URDF_TO_REAL_TORQUE * odrive_torque
 
             # apply cliping to get max torque
             #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
