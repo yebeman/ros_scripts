@@ -133,10 +133,10 @@ class MotorControl:
         self.pos_rl_q = pos_rl_q
         self.vel_rl_q = vel_rl_q
 
-        self.prv_pos_nn  = (0,0,0,0,0,0)
-        self.prv_cur_pos = (0,0,0,0,0,0)
-        self.prv_cur_vel = (0,0,0,0,0,0)
-        self.prv_torque  = (0,0,0,0,0,0)
+        self.prv_pos_nn  = np.array([(0,0,0,0,0,0)])
+        self.prv_cur_pos = np.array([(0,0,0,0,0,0)])
+        self.prv_cur_vel = np.array([(0,0,0,0,0,0)])
+        self.prv_torque  = np.array([(0,0,0,0,0,0)])
 
         self.running = True
         self.motor_state = MOTOR_STATE.STOPPED
