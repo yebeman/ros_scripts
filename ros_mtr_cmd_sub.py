@@ -297,8 +297,10 @@ class MotorControl:
             # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
             #force_at_24 = np.abs(torque) / FIXED_LINKS_LENGTH
             _torque = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * np.abs(torque) # take -ve 
-            _weight_in_gram = _torque * 1000 # kg to gram
-            odrive_torque = ( _weight_in_gram + 71.897 ) / 7468.5
+            _torque_in_gram = _torque * 1000 # kg to gram
+            odrive_torque_in_gram = ( _torque_in_gram + 71.897 ) / 7468.5
+            odrive_torque = odrive_torque_in_gram / 1000 # gram to kg
+
             odrive_torque = odrive_torque * (torque/np.where(torque == 0,1,np.abs(torque))) # apply the -ve back
 
             # apply cliping to get max torque
