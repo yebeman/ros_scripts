@@ -144,18 +144,21 @@ class MotorControl:
         # self.command_thread.start()
         self.process_commands()
 
-    def send_torque(self, torque_feedforward: np.array((0, 0, 0, 0, 0, 0))):
+    def send_torque(self, motors_torque: np.array((0, 0, 0, 0, 0, 0))):
 
-        try:
-            for index,torque in enumerate(motors_torque) :  
-                print(f" sent torque = {index}:{torque}")      
-                bus.send(can.Message(
-                    arbitration_id=(index << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-                    data=struct.pack('<f', torque),
-                    is_extended_id=False
-                ))
-        except OSError as e:
-            print(f"CAN send failed: {e}")
+        print(f"motors_torque={motors_torque.tolist()}")
+
+        # try:
+        #     for index,torque in enumerate(motors_torque) :  
+        #         print(f" sent torque = {index}:{torque}") 
+        mtr_id = 1    
+        bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x0e),  # 0x0e: Set_Input_Torque
+            data=struct.pack('<f', motors_torque[0]),#torque),
+            is_extended_id=False
+        ))
+        # except OSError as e:
+        #     print(f"CAN send failed: {e}")
 
     def send_position(
         self,
@@ -186,26 +189,26 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        # if (mtr_id > 3):
-        #     return
+        if (mtr_id > 1):
+            return
 
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x07),
-        #     data=struct.pack('<I', 8),
-        #     is_extended_id=False
-        # ))
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x07),
+            data=struct.pack('<I', 8),
+            is_extended_id=False
+        ))
 
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        # if (mtr_id > 3):
-        #     return
+        if (mtr_id > 1):
+            return
 
-        # self.bus.send(can.Message(
-        #     arbitration_id=(mtr_id << 5 | 0x07),
-        #     data=struct.pack('<I', 1), # disable
-        #     is_extended_id=False
-        # ))
+        self.bus.send(can.Message(
+            arbitration_id=(mtr_id << 5 | 0x07),
+            data=struct.pack('<I', 1), # disable
+            is_extended_id=False
+        ))
 
     def process_positions(self):
 
@@ -299,6 +302,7 @@ class MotorControl:
             # apply cliping to get max torque
             #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
             odrive_torque = np.clip(odrive_torque, ODRIVE_SET_MIN_TORQUE, ODRIVE_SET_MAX_TORQUE)
+            
 
             # calculate pos_rl 
             # if ( motor_id   == 1 or motor_id == 4 ) :       # knee
@@ -315,7 +319,7 @@ class MotorControl:
             #     continue;
             # assuming target_pos is already limited when send?
             # print(f"pos_nn = {pos_nn.tolist()}")
-            target_pos =  URDF_TO_REAL_POS_FACTOR * pos_nn + URDF_TO_REAL_POS_OFFSET
+            #target_pos =  URDF_TO_REAL_POS_FACTOR * pos_nn + URDF_TO_REAL_POS_OFFSET
             # print(f"target_pos = {target_pos.tolist()}")
             #print(f"cur_pos = {cur_pos.tolist()}")
 
@@ -324,7 +328,8 @@ class MotorControl:
 
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
-            self.send_position(target_pos,target_vel,odrive_torque)
+            #self.send_position(target_pos,target_vel,odrive_torque)
+            self.send_torque(odrive_torque)
             # print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
             # print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
             # print(f"torque = {torque.tolist()} \nforce_at_link = {force_at_link.tolist()} \nelapsed_time={elapsed_time}")
