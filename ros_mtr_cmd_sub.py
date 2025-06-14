@@ -286,13 +286,13 @@ class MotorControl:
             # error_vel = control_action.joint_velocities - joint_vel
             # # calculate the desired joint torques
             # self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
-            print(f"pos_nn = {pos_nn.tolist()}")
-            print(f"cur_pos = {cur_pos.tolist()}")
-            print(f"pos_error = {pos_error.tolist()}")
-            print(f"cur_vel = {cur_vel.tolist()}")
-            print(f"vel_error = {vel_error.tolist()}")
+            # print(f"pos_nn = {pos_nn.tolist()}")
+            # print(f"cur_pos = {cur_pos.tolist()}")
+            # print(f"pos_error = {pos_error.tolist()}")
+            # print(f"cur_vel = {cur_vel.tolist()}")
+            # print(f"vel_error = {vel_error.tolist()}")
             torque = STIFFNESS*pos_error + DAMPING*vel_error + self.prv_torque
-            print(f"torque= {torque.tolist()}")
+            # print(f"torque= {torque.tolist()}")
 
             # translate torque to real
             # torque_nn = Force * radius - from motor torque
@@ -337,6 +337,7 @@ class MotorControl:
             # translate to the odrive torque and send
             #self.send_position(pos_rl,vel_rl,torque_rl)
             #self.send_position(target_pos,target_vel,odrive_torque)
+            print(f"before send_torque = {(time.monotonic() - cmd_request_period)}")
             self.send_torque(odrive_torque)
             # print(f"\nPos NN = {pos_nn.tolist()} \nTarget Pos = {target_pos.tolist()} \nTarget Vel = {target_vel.tolist()} \nODrive Torque = {odrive_torque.tolist()}")
             # print(f"cur_pos = {cur_pos.tolist()} \ncur_vel = {cur_vel.tolist()} \npos_error = {pos_error.tolist()} \nvel_error = {vel_error.tolist()}")
