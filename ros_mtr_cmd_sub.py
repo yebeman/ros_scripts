@@ -151,6 +151,10 @@ class MotorControl:
 
         try:
             for index,torque in enumerate(motors_torque) :  
+
+                if index > 2:
+                    continue
+
                 print(f" sent torque = {(index+1)}:{torque}") 
                 self.bus.send(can.Message(
                     arbitration_id=((index+1) << 5 | 0x0e),  # 0x0e: Set_Input_Torque
@@ -189,8 +193,8 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        # if  (mtr_id > 3):
-        #     return
+        if  (mtr_id > 3):
+            return
 
         self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x07),
@@ -201,8 +205,8 @@ class MotorControl:
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        # if  (mtr_id > 3):
-        #     return
+        if  (mtr_id > 3):
+            return
 
         self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x07),
