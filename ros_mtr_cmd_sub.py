@@ -330,6 +330,7 @@ class MotorControl:
 
             # update at 5ms frequency 
             cmd_elapsed_period = 0.005 - (time.monotonic() - cmd_request_period) # should take 5ms 
+            print(f"cmd_elapsed_period = {cmd_elapsed_period} and elapsed = {(time.monotonic() - cmd_request_period)}")
             if (cmd_elapsed_period > 0) : 
                 time.sleep(cmd_elapsed_period)
             cmd_request_period = time.monotonic()
