@@ -295,10 +295,11 @@ class MotorControl:
             # rlp of motor and torque at 0.24m 
             # F1 = 7468.5*Torque_real - 71.897
             # F * Rnew/0.24 = 7468.5*Torque_real - 71.897
-            force_at_24 = torque / FIXED_LINKS_LENGTH
+            force_at_24 = np.abs(torque) / FIXED_LINKS_LENGTH
             force_at_link = (FIXED_LINKS_LENGTH/FIXED_LINKS_LENGTH[0]) * force_at_24
             odrive_torque = ( force_at_link + 71.897 ) / 7468.5
-        
+            odrive_torque = odrive_torque * (torque/np.abs(torque))
+
             # apply cliping to get max torque
             #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
             odrive_torque = np.clip(odrive_torque, ODRIVE_SET_MIN_TORQUE, ODRIVE_SET_MAX_TORQUE)
