@@ -270,7 +270,7 @@ class MotorControl:
             # cmd_sample_time = time.monotonic()
 
             # np.clip(target_vel, ODRIVE_MIN_VEL, ODRIVE_MAX_VEL)  # clip 
-            target_vel = 0 # isaacsim has this to be 0
+            target_vel = np.array((0, 0, 0, 0, 0, 0)) # isaacsim has this to be 0
             vel_error  = target_vel - cur_vel
 
             # then calculate torque            
