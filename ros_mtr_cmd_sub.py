@@ -279,6 +279,13 @@ class MotorControl:
             # error_vel = control_action.joint_velocities - joint_vel
             # # calculate the desired joint torques
             # self.computed_effort = self.stiffness * error_pos + self.damping * error_vel + control_action.joint_efforts
+            print(f"pos_nn = {pos_nn.tolist()}")
+            print(f"cur_pos = {cur_pos.tolist()}")
+            print(f"pos_error = {pos_error.tolist()}")
+            print(f"cur_vel = {cur_vel.tolist()}")
+            print(f"vel_error = {vel_error.tolist()}")
+            print(f"pos_nn = {pos_nn.tolist()}")
+
             torque = STIFFNESS*pos_error + DAMPING*vel_error + self.prv_torque
 
             # translate torque to real
@@ -308,9 +315,9 @@ class MotorControl:
             #     print(f"Motor_{motor_id} position {position} too large")
             #     continue;
             # assuming target_pos is already limited when send?
-            print(f"pos_nn = {pos_nn.tolist()}")
+            # print(f"pos_nn = {pos_nn.tolist()}")
             target_pos =  URDF_TO_REAL_POS_FACTOR * pos_nn + URDF_TO_REAL_POS_OFFSET
-            print(f"target_pos = {target_pos.tolist()}")
+            # print(f"target_pos = {target_pos.tolist()}")
             #print(f"cur_pos = {cur_pos.tolist()}")
 
             # odrive takes velocity command rev/s
@@ -326,7 +333,7 @@ class MotorControl:
             self.prv_pos_nn  = pos_nn
             self.prv_cur_vel = cur_vel
             self.prv_cur_pos = cur_pos
-            self.prv_torque  = torque
+            self.prv_torque  = np.array((0, 0, 0, 0, 0, 0)) #isaaclab apperently sets this to 0 during calc torque
 
             # update at 5ms frequency 
             cmd_elapsed_period = 0.005 - (time.monotonic() - cmd_request_period) # should take 5ms 
