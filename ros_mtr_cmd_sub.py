@@ -152,7 +152,7 @@ class MotorControl:
         #     for index,torque in enumerate(motors_torque) :  
         #         print(f" sent torque = {index}:{torque}") 
         mtr_id = 1    
-        bus.send(can.Message(
+        self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x0e),  # 0x0e: Set_Input_Torque
             data=struct.pack('<f', motors_torque[0]),#torque),
             is_extended_id=False
@@ -302,7 +302,7 @@ class MotorControl:
             # apply cliping to get max torque
             #odrive_torque =  max(ODRIVE_SET_MIN_TORQUE, min(odrive_torque, ODRIVE_SET_MAX_TORQUE))
             odrive_torque = np.clip(odrive_torque, ODRIVE_SET_MIN_TORQUE, ODRIVE_SET_MAX_TORQUE)
-            
+
 
             # calculate pos_rl 
             # if ( motor_id   == 1 or motor_id == 4 ) :       # knee
