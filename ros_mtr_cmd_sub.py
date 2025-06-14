@@ -424,7 +424,7 @@ class MotorListener(Node):
 
         #for now Zero everything else
         # do it only once
-         if motor_id == 1:   
+        if motor_id == 1:   
         #     self.pos_nn_q.save_to_queue(1, 0.0)
         #     self.pos_nn_q.save_to_queue(3, 0.0)
             self.pos_nn_q.save_to_queue(4, 0.0)
