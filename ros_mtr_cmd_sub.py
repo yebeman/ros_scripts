@@ -152,10 +152,10 @@ class MotorControl:
         # try:
         #     for index,torque in enumerate(motors_torque) :  
         #         print(f" sent torque = {index}:{torque}") 
-        mtr_id = 1    
+        mtr_id = 2    
         self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x0e),  # 0x0e: Set_Input_Torque
-            data=struct.pack('<f', motors_torque[0]),#torque),
+            data=struct.pack('<f', motors_torque[1]),#torque),
             is_extended_id=False
         ))
         # except OSError as e:
@@ -190,7 +190,7 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        if (mtr_id > 1):
+        if not (mtr_id == 2):
             return
 
         self.bus.send(can.Message(
@@ -202,7 +202,7 @@ class MotorControl:
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        if (mtr_id > 1):
+        if not (mtr_id == 2):
             return
 
         self.bus.send(can.Message(
@@ -425,8 +425,8 @@ class MotorListener(Node):
 
         #for now Zero everything else
         # do it only once
-        if motor_id == 1:   
-            self.pos_nn_q.save_to_queue(2, 0.0)
+        if motor_id == 2:   
+            self.pos_nn_q.save_to_queue(1, 0.0)
             self.pos_nn_q.save_to_queue(3, 0.0)
             self.pos_nn_q.save_to_queue(4, 0.0)
             self.pos_nn_q.save_to_queue(5, 0.0)
@@ -437,8 +437,8 @@ class MotorListener(Node):
 
         # for now Zero everything else
         # do it only once
-        if motor_id == 1:   
-            self.pos_rl_q.save_to_queue(2, 0.0)
+        if motor_id == 2:   
+            self.pos_rl_q.save_to_queue(1, 0.0)
             self.pos_rl_q.save_to_queue(3, 0.0)
             self.pos_rl_q.save_to_queue(4, 0.0)
             self.pos_rl_q.save_to_queue(5, 0.0)
@@ -449,8 +449,8 @@ class MotorListener(Node):
 
         # for now Zero everything else
         # do it only once
-        if motor_id == 1:   
-            self.vel_rl_q.save_to_queue(2, 0.0)
+        if motor_id == 2:   
+            self.vel_rl_q.save_to_queue(1, 0.0)
             self.vel_rl_q.save_to_queue(3, 0.0)
             self.vel_rl_q.save_to_queue(4, 0.0)
             self.vel_rl_q.save_to_queue(5, 0.0)
