@@ -284,8 +284,6 @@ class MotorControl:
             print(f"pos_error = {pos_error.tolist()}")
             print(f"cur_vel = {cur_vel.tolist()}")
             print(f"vel_error = {vel_error.tolist()}")
-            print(f"pos_nn = {pos_nn.tolist()}")
-
             torque = STIFFNESS*pos_error + DAMPING*vel_error + self.prv_torque
 
             # translate torque to real
