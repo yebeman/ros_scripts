@@ -153,11 +153,11 @@ class MotorControl:
 
         # Precompute base arbitration IDs
         arb_base = 0x0e
-        arb_ids = [((i + 1) << 5) | arb_base for i in range(3)]  # Only motors 0,1,2
+        arb_ids = [((i + 1) << 5) | arb_base for i in range(7)]  # Only motors 0,1,2
 
 
         try:
-            for index, torque in enumerate(motors_torque[:3]):  # Skip indices > 2 directly
+            for index, torque in enumerate(motors_torque[3:]):  # Skip indices > 2 directly
                 print(f" sent torque = {index + 1}:{torque}")
         
                 data = torque_packer.pack(torque)
@@ -196,7 +196,7 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        if  (mtr_id > 3):
+        if  not (mtr_id == 4):
             return
 
         self.bus.send(can.Message(
@@ -208,7 +208,7 @@ class MotorControl:
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        if  (mtr_id > 3):
+        if  not (mtr_id == 4):
             return
 
         self.bus.send(can.Message(
@@ -432,36 +432,36 @@ class MotorListener(Node):
 
         #for now Zero everything else
         # do it only once
-        if motor_id == 1:   
+        if motor_id == 4:   
         #     self.pos_nn_q.save_to_queue(1, 0.0)
         #     self.pos_nn_q.save_to_queue(3, 0.0)
-            self.pos_nn_q.save_to_queue(4, 0.0)
-            self.pos_nn_q.save_to_queue(5, 0.0)
-            self.pos_nn_q.save_to_queue(6, 0.0)
+            self.pos_nn_q.save_to_queue(1, 0.0)
+            self.pos_nn_q.save_to_queue(2, 0.0)
+            self.pos_nn_q.save_to_queue(3, 0.0)
 
     def current_pos_callback(self, msg, motor_id):
         self.pos_rl_q.save_to_queue(motor_id, msg.data)
 
         # for now Zero everything else
         # do it only once
-        if motor_id == 1:   
+        if motor_id == 4:   
             # self.pos_rl_q.save_to_queue(1, 0.0)
             # self.pos_rl_q.save_to_queue(3, 0.0)
-            self.pos_rl_q.save_to_queue(4, 0.0)
-            self.pos_rl_q.save_to_queue(5, 0.0)
-            self.pos_rl_q.save_to_queue(6, 0.0)
+            self.pos_rl_q.save_to_queue(1, 0.0)
+            self.pos_rl_q.save_to_queue(2, 0.0)
+            self.pos_rl_q.save_to_queue(3, 0.0)
 
     def current_vel_callback(self, msg, motor_id):
         self.vel_rl_q.save_to_queue(motor_id, msg.data)
 
         # for now Zero everything else
         # do it only once
-        if motor_id == 1:   
+        if motor_id == 4:   
             # self.vel_rl_q.save_to_queue(1, 0.0)
             # self.vel_rl_q.save_to_queue(3, 0.0)
-            self.vel_rl_q.save_to_queue(4, 0.0)
-            self.vel_rl_q.save_to_queue(5, 0.0)
-            self.vel_rl_q.save_to_queue(6, 0.0)
+            self.vel_rl_q.save_to_queue(1, 0.0)
+            self.vel_rl_q.save_to_queue(2, 0.0)
+            self.vel_rl_q.save_to_queue(3, 0.0)
 
 
     def all_motor_callback(self, msg):
