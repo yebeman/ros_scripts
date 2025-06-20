@@ -158,10 +158,10 @@ class MotorControl:
 
         try:
             for index, torque in enumerate(motors_torque[3:]):  # Skip indices > 2 directly
-                print(f" sent torque = {index + 1}:{torque}")
+                print(f" sent torque = {index + 3}:{torque}")
         
                 data = torque_packer.pack(torque)
-                msg = can.Message(arbitration_id=arb_ids[index], data=data, is_extended_id=False)
+                msg = can.Message(arbitration_id=arb_ids[index+3], data=data, is_extended_id=False)
                 self.bus.send(msg)
         
         except OSError as e:
@@ -433,8 +433,8 @@ class MotorListener(Node):
         #for now Zero everything else
         # do it only once
         if motor_id == 4:   
-        #     self.pos_nn_q.save_to_queue(1, 0.0)
-        #     self.pos_nn_q.save_to_queue(3, 0.0)
+            self.pos_nn_q.save_to_queue(5, 0.0)
+            self.pos_nn_q.save_to_queue(6, 0.0)
             self.pos_nn_q.save_to_queue(1, 0.0)
             self.pos_nn_q.save_to_queue(2, 0.0)
             self.pos_nn_q.save_to_queue(3, 0.0)
@@ -445,8 +445,8 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 4:   
-            # self.pos_rl_q.save_to_queue(1, 0.0)
-            # self.pos_rl_q.save_to_queue(3, 0.0)
+            self.pos_rl_q.save_to_queue(5, 0.0)
+            self.pos_rl_q.save_to_queue(6, 0.0)
             self.pos_rl_q.save_to_queue(1, 0.0)
             self.pos_rl_q.save_to_queue(2, 0.0)
             self.pos_rl_q.save_to_queue(3, 0.0)
@@ -457,8 +457,8 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 4:   
-            # self.vel_rl_q.save_to_queue(1, 0.0)
-            # self.vel_rl_q.save_to_queue(3, 0.0)
+            self.vel_rl_q.save_to_queue(5, 0.0)
+            self.vel_rl_q.save_to_queue(6, 0.0)
             self.vel_rl_q.save_to_queue(1, 0.0)
             self.vel_rl_q.save_to_queue(2, 0.0)
             self.vel_rl_q.save_to_queue(3, 0.0)
