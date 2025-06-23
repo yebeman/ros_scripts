@@ -14,24 +14,25 @@ import numpy as np
 # knee 
 # -2.7  <--> 2.7  = 5.4   => sr
 # 2.7   <--> -2.7 = 5.4   => sl
-# 0.00  <--> 7.06 = 7.06  => r
+# 0.00  <--> 7.06 = 7.06  => l
+# 0     <--> -7.06= 7.06  => r 
 KNEE_FACTOR = 5.4/7.06 # for sr. for sl *-1
 KNEE_OFFSET = -2.7     # for sr and sl * -1 
 # Hip
 # -2.3  <--> 2.3    = 4.6  => sr
 # 2.3   <--> -2.3   = 4.6  => sl
-# 0.00  <--> -5.36  = 5.36 => r
+# 0.00  <--> -5.36  = 5.36 => l
 HIP_FACTOR  = -4.6/5.36  # for sr, for sl *-1
 HIP_OFFSET  = -2.3       # for sr, for sl *-1
 # ABAD
 # -0.44  <--> 0.44  = .88  => sr
 # 0.44   <--> -0.44 = .88  => sl
-# -0.68  <--> 0.68  = 1.36 => r
+# -0.68  <--> 0.68  = 1.36 => l
 ABAD_FACTOR = 0.88/1.36 # for sl, for sr *-1
 ABAD_OFFSET = 0
 
-REAL_TO_URDF_POS_FACTOR = (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
-REAL_TO_URDF_POS_OFFSET = (-1*KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
+REAL_TO_URDF_POS_FACTOR = (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR)
+REAL_TO_URDF_POS_OFFSET = (-1*KNEE_OFFSET,-1*HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,ABAD_OFFSET)
 ################################
 
 class MotorPublisher(Node):

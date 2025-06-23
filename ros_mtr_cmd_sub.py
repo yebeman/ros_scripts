@@ -38,7 +38,7 @@ ABAD_OFFSET = 0
 # position conversion 
 URDF_TO_REAL_POS_FACTOR =  (-1*KNEE_FACTOR,-1*HIP_FACTOR,ABAD_FACTOR,KNEE_FACTOR,HIP_FACTOR,-1*ABAD_FACTOR)
 URDF_TO_REAL_POS_OFFSET =  (   KNEE_OFFSET,   HIP_OFFSET,ABAD_OFFSET,KNEE_OFFSET,HIP_OFFSET,-1*ABAD_OFFSET)
-URDF_TO_REAL_TORQUE     =  (-1,1,1,1,1,-1)
+URDF_TO_REAL_TORQUE     =  (-1,1,1,-1,1,1)
 # number of motots
 NO_OF_MOTORS = 3
 ################################
@@ -196,9 +196,6 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        if  not (mtr_id == 4):
-            return
-
         self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x07),
             data=struct.pack('<I', 8),
@@ -207,9 +204,6 @@ class MotorControl:
 
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
-
-        if  not (mtr_id == 4):
-            return
 
         self.bus.send(can.Message(
             arbitration_id=(mtr_id << 5 | 0x07),
@@ -433,8 +427,6 @@ class MotorListener(Node):
         #for now Zero everything else
         # do it only once
         if motor_id == 4:   
-            self.pos_nn_q.save_to_queue(5, 0.0)
-            self.pos_nn_q.save_to_queue(6, 0.0)
             self.pos_nn_q.save_to_queue(1, 0.0)
             self.pos_nn_q.save_to_queue(2, 0.0)
             self.pos_nn_q.save_to_queue(3, 0.0)
@@ -445,8 +437,6 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 4:   
-            self.pos_rl_q.save_to_queue(5, 0.0)
-            self.pos_rl_q.save_to_queue(6, 0.0)
             self.pos_rl_q.save_to_queue(1, 0.0)
             self.pos_rl_q.save_to_queue(2, 0.0)
             self.pos_rl_q.save_to_queue(3, 0.0)
@@ -457,8 +447,6 @@ class MotorListener(Node):
         # for now Zero everything else
         # do it only once
         if motor_id == 4:   
-            self.vel_rl_q.save_to_queue(5, 0.0)
-            self.vel_rl_q.save_to_queue(6, 0.0)
             self.vel_rl_q.save_to_queue(1, 0.0)
             self.vel_rl_q.save_to_queue(2, 0.0)
             self.vel_rl_q.save_to_queue(3, 0.0)
