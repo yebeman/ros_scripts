@@ -125,9 +125,10 @@ class motor_queue:
 
 ################################
 class MotorControl:
-    def __init__(self, pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus):
+    def __init__(self, pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, left_can_bus, right_can_bus):
         """Initialize motor controller."""
-        self.bus = bus
+        self.left_can_bus  = left_can_bus
+        self.right_can_bus = right_can_bus
         self.state_request_queue = state_request_queue 
 
         self.pos_nn_q = pos_nn_q
@@ -155,14 +156,18 @@ class MotorControl:
         arb_base = 0x0e
         arb_ids = [((i + 1) << 5) | arb_base for i in range(7)]  # Only motors 0,1,2
 
-
         try:
-            for index, torque in enumerate(motors_torque[3:]):  # Skip indices > 2 directly
-                print(f" sent torque = {index + 3}:{torque}")
+            for index, torque in enumerate(motors_torque):  # Skip indices > 2 directly
+                print(f" sent torque = {index}:{torque}")
         
                 data = torque_packer.pack(torque)
-                msg = can.Message(arbitration_id=arb_ids[index+3], data=data, is_extended_id=False)
-                self.bus.send(msg)
+                msg = can.Message(arbitration_id=arb_ids[index], data=data, is_extended_id=False)
+
+                # send message
+                if index <= 3 :
+                    self.left_can_bus.send(msg)
+                else:
+                    self.right_can_bus.send(msg)
         
         except OSError as e:
             print(f"CAN send failed: {e}")
@@ -196,20 +201,34 @@ class MotorControl:
     def init_motor(self,mtr_id):
         print(f"Starting motor {mtr_id}")
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 8),
-            is_extended_id=False
-        ))
+        if mtr_id <= 3 :
+            self.left_can_bus.send(can.Message(
+                arbitration_id=(mtr_id << 5 | 0x07),
+                data=struct.pack('<I', 8),
+                is_extended_id=False
+            ))
+        else:
+            self.right_can_bus.send(can.Message(
+                arbitration_id=(mtr_id << 5 | 0x07),
+                data=struct.pack('<I', 8),
+                is_extended_id=False
+            ))
 
     def stop_motor(self,mtr_id):
         print(f"Stopping motor {mtr_id}")
 
-        self.bus.send(can.Message(
-            arbitration_id=(mtr_id << 5 | 0x07),
-            data=struct.pack('<I', 1), # disable
-            is_extended_id=False
-        ))
+        if mtr_id <= 3 :
+            self.left_can_bus.send(can.Message(
+                arbitration_id=(mtr_id << 5 | 0x07),
+                data=struct.pack('<I', 1), # disable
+                is_extended_id=False
+            ))
+        else:
+            self.right_can_bus.send(can.Message(
+                arbitration_id=(mtr_id << 5 | 0x07),
+                data=struct.pack('<I', 1), # disable
+                is_extended_id=False
+            ))
 
     def process_positions(self):
 
@@ -459,7 +478,8 @@ class MotorListener(Node):
 
 
 def main(args=None):
-    bus = can.interface.Bus(interface='socketcan', channel='can0', bitrate=1000000)
+    left_can_bus  = can.interface.Bus(interface='socketcan', channel='can_left', bitrate=1000000)
+    right_can_bus = can.interface.Bus(interface='socketcan', channel='can_right', bitrate=1000000)
     
     rclpy.init(args=args)
 
@@ -473,7 +493,7 @@ def main(args=None):
     listener_thread = threading.Thread(target=rclpy.spin, args=(listener_node,), daemon=True)
     listener_thread.start()
 
-    motor_control = MotorControl(pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, bus)
+    motor_control = MotorControl(pos_nn_q, state_request_queue,pos_rl_q,vel_rl_q, left_can_bus, right_can_bus)
 
     try:
         listener_thread.join()  # Keep ROS 2 listener running
