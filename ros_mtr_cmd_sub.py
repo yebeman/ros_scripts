@@ -443,32 +443,32 @@ class MotorListener(Node):
         """Stores received motor position data in the queue."""
         self.pos_nn_q.save_to_queue(motor_id, msg.data)
 
-        #for now Zero everything else
-        # do it only once
-        if motor_id == 4:   
-            self.pos_nn_q.save_to_queue(1, 0.0)
-            self.pos_nn_q.save_to_queue(2, 0.0)
-            self.pos_nn_q.save_to_queue(3, 0.0)
+        # #for now Zero everything else
+        # # do it only once
+        # if motor_id == 4:   
+        #     self.pos_nn_q.save_to_queue(1, 0.0)
+        #     self.pos_nn_q.save_to_queue(2, 0.0)
+        #     self.pos_nn_q.save_to_queue(3, 0.0)
 
     def current_pos_callback(self, msg, motor_id):
         self.pos_rl_q.save_to_queue(motor_id, msg.data)
 
-        # for now Zero everything else
-        # do it only once
-        if motor_id == 4:   
-            self.pos_rl_q.save_to_queue(1, 0.0)
-            self.pos_rl_q.save_to_queue(2, 0.0)
-            self.pos_rl_q.save_to_queue(3, 0.0)
+        # # for now Zero everything else
+        # # do it only once
+        # if motor_id == 4:   
+        #     self.pos_rl_q.save_to_queue(1, 0.0)
+        #     self.pos_rl_q.save_to_queue(2, 0.0)
+        #     self.pos_rl_q.save_to_queue(3, 0.0)
 
     def current_vel_callback(self, msg, motor_id):
         self.vel_rl_q.save_to_queue(motor_id, msg.data)
 
-        # for now Zero everything else
-        # do it only once
-        if motor_id == 4:   
-            self.vel_rl_q.save_to_queue(1, 0.0)
-            self.vel_rl_q.save_to_queue(2, 0.0)
-            self.vel_rl_q.save_to_queue(3, 0.0)
+        # # for now Zero everything else
+        # # do it only once
+        # if motor_id == 4:   
+        #     self.vel_rl_q.save_to_queue(1, 0.0)
+        #     self.vel_rl_q.save_to_queue(2, 0.0)
+        #     self.vel_rl_q.save_to_queue(3, 0.0)
 
 
     def all_motor_callback(self, msg):
